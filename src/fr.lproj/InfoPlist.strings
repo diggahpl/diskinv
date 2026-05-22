@@ -1,5 +1,5 @@
 ﻿/* Localized versions of Info.plist keys */
-CFBundleGetInfoString = "Disk Inventory Xs version 1.1, Tjark Derlien 2022, Mahmoud Lababidi 2026";
+CFBundleGetInfoString = "Disk Inventory Xs version 1.2, Tjark Derlien 2022, Mahmoud Lababidi 2026";
 NSHumanReadableCopyright = "Mis à disposition selon la GPL";
 
 NSCalendarsUsageDescription = "Disk Inventory Xs doit accéder aux fichiers de calendrier pour inspecter leurs tailles et autres attributs de fichier.\nAucune donnée ne sera lue.";

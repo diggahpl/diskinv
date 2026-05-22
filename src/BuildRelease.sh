@@ -92,11 +92,19 @@ echo "==> Stripping framework headers (release hygiene)"
 find "$APP_BUILT/Contents/Frameworks" -type d \( -name Headers -o -name PrivateHeaders \) -print0 | xargs -0 rm -rf
 
 echo "==> Re-signing with identity: $SIGN_IDENTITY"
-# Sign inner-out: framework first (after header strip invalidates the in-tree
-# signature), then the .app.
+# Sign inner-out: framework, then main Mach-O, then the .app bundle.
+# The explicit main Mach-O sign is required because we pass CODE_SIGNING_ALLOWED=NO
+# to xcodebuild (Xcode's own CodeSign step trips over the framework header-strip),
+# so the linker leaves the binary unsigned and `codesign <bundle>` won't propagate
+# a signature to an unsigned inner Mach-O.
 codesign --force --options runtime \
     --sign "$SIGN_IDENTITY" \
     "$APP_BUILT/Contents/Frameworks/TreeMapView.framework"
+
+EXE_NAME="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP_BUILT/Contents/Info.plist")"
+codesign --force --options runtime \
+    --sign "$SIGN_IDENTITY" \
+    "$APP_BUILT/Contents/MacOS/$EXE_NAME"
 
 codesign --force --options runtime \
     --sign "$SIGN_IDENTITY" \

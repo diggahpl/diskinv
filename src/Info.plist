@@ -66,7 +66,7 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>Disk Inventory X</string>
+	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleHelpBookFolder</key>
 	<string>Help</string>
 	<key>CFBundleHelpBookName</key>
