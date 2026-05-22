@@ -72,7 +72,7 @@
 	[arrangedObjects sortUsingDescriptors: [self sortDescriptors]];
 
 	unsigned totalFileCount = 0;
-	unsigned i = [arrangedObjects count];
+	NSUInteger i = [arrangedObjects count];
 	while ( i-- )
 		totalFileCount += [(FileKindStatistic*) [arrangedObjects objectAtIndex: i] fileCount];
 			

@@ -76,7 +76,9 @@ BOOL g_EnableLogging;
 
 - (void) openDocumentWithContentsOfFile: (NSString*) fileName
 {
-	[self openDocumentWithContentsOfFile: fileName display: [self shouldCreateUI]];
+	[self openDocumentWithContentsOfURL: [NSURL fileURLWithPath: fileName]
+							    display: YES
+					  completionHandler: ^(NSDocument *doc, BOOL alreadyOpen, NSError *error) { }];
 }
 
 - (BOOL) applicationShouldOpenUntitledFile: (NSApplication*) sender
@@ -111,7 +113,9 @@ BOOL g_EnableLogging;
 	
 	for ( NSURL *dir in fileNames )
 	{
-		[self openDocumentWithContentsOfFile: [dir path] display: YES];
+		[self openDocumentWithContentsOfURL: dir
+								    display: YES
+						  completionHandler: ^(NSDocument *doc, BOOL alreadyOpen, NSError *error) { }];
 	}
 }
 
@@ -191,7 +195,9 @@ BOOL g_EnableLogging;
     //show donate message
 	if ( ![[NSUserDefaults standardUserDefaults] boolForKey: DontShowDonationMessage] )
 	{
-		[NSBundle loadNibNamed: @"DonationPanel" owner:self];
+		NSArray *topLevelObjects = nil;
+		[[NSBundle mainBundle] loadNibNamed: @"DonationPanel" owner: self topLevelObjects: &topLevelObjects];
+		_donationPanelNibTopLevelObjects = [topLevelObjects retain];
 		[_donationPanel setWorksWhenModal: YES];
 	}
 	

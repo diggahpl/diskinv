@@ -118,9 +118,9 @@
     
     // set small scrollbars
     if ([scrollView verticalScroller])
-        [[scrollView verticalScroller] setControlSize:NSSmallControlSize];
+        [[scrollView verticalScroller] setControlSize:NSControlSizeSmall];
     if ([scrollView horizontalScroller])
-        [[scrollView horizontalScroller] setControlSize:NSSmallControlSize];
+        [[scrollView horizontalScroller] setControlSize:NSControlSizeSmall];
     
     contentRect = [scrollView bounds];
     contentRect.size = [scrollView contentSize];
@@ -425,20 +425,14 @@
 {
     NSString* perm = @"";
 
-    // get mode bits
-    // [NSFileManager attributesOfItemAtPath:error:] provides the permission bits ([NSFileAttributes filePosixPermissions]),
-    // but not the complete mode bits; so use the carbon functions instead ...
-    
-    FSRef ref;
-    if ( FSPathMakeRef((const UInt8*)[URL fileSystemRepresentation], &ref, nil) != noErr )
+    // get mode bits via lstat (replaces deprecated FSPathMakeRef/FSGetCatalogInfo);
+    // [NSFileManager attributesOfItemAtPath:error:] strips the type bits we need below.
+    struct stat statBuf;
+    if ( lstat([URL fileSystemRepresentation], &statBuf) != 0 )
         return perm;
-    
-    FSCatalogInfo catalogInfo;
-    if ( FSGetCatalogInfo(&ref, kFSCatInfoPermissions, &catalogInfo, NULL, NULL, NULL) != noErr )
-        return perm;
-    
-    UInt16 modeBits = catalogInfo.permissions.mode;
-    UInt16 permBits = (modeBits & ACCESSPERMS);
+
+    mode_t modeBits = statBuf.st_mode;
+    mode_t permBits = (modeBits & ACCESSPERMS);
     
     if (S_ISDIR(modeBits))
         perm = [perm stringByAppendingString:@"d"];

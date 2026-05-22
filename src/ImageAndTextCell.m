@@ -188,7 +188,10 @@
        //    respectFlipped: YES
        //             hints: nil];
        
-       [_image compositeToPoint:imageFrame.origin operation:NSCompositeSourceOver];
+       [_image drawAtPoint: imageFrame.origin
+                  fromRect: NSZeroRect
+                 operation: NSCompositingOperationSourceOver
+                  fraction: 1.0];
     }
     
     NSString *truncatedString = [ImageAndTextCell stringByTruncatingToWidth: NSWidth(cellFrame)

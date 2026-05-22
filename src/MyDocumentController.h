@@ -21,6 +21,7 @@
 {
 	IBOutlet NSMenu* _zoomStackMenu;
 	IBOutlet NSPanel* _donationPanel;
+	NSArray *_donationPanelNibTopLevelObjects;
 }
 
 - (IBAction) showPreferencesPanel: (id) sender;

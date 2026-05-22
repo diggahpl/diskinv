@@ -22,10 +22,12 @@
 - (id) init
 {
 	self = [super init];
-	
+
     //load Nib with progress panel
-	if ( ![NSBundle loadNibNamed: @"LoadingPanel" owner: self] )
+	NSArray *topLevelObjects = nil;
+	if ( ![[NSBundle mainBundle] loadNibNamed: @"LoadingPanel" owner: self topLevelObjects: &topLevelObjects] )
 		NSAssert( NO, @"couldn't load LoadingPanel.nib" );
+	_nibTopLevelObjects = [topLevelObjects retain];
 	
 	[_loadingProgressIndicator setUsesThreadedAnimation: NO];
     [_loadingProgressIndicator startAnimation: self];
@@ -44,17 +46,15 @@
 - (id) initAsSheetForWindow: (NSWindow*) window
 {
 	self = [super init];
-	
+
     //load Nib with progress panel
-	if ( ![NSBundle loadNibNamed: @"LoadingPanel" owner: self] )
+	NSArray *topLevelObjects = nil;
+	if ( ![[NSBundle mainBundle] loadNibNamed: @"LoadingPanel" owner: self topLevelObjects: &topLevelObjects] )
 		NSAssert( NO, @"couldn't load LoadingPanel.nib" );
+	_nibTopLevelObjects = [topLevelObjects retain];
 	
-	[NSApp beginSheet: _loadingPanel
-	   modalForWindow: window
-		modalDelegate: self
-	   didEndSelector: nil
-		  contextInfo: NULL];
-	
+	[window beginSheet: _loadingPanel completionHandler: nil];
+
 	[_loadingPanel setWorksWhenModal: YES];
 	
 	[_loadingProgressIndicator setUsesThreadedAnimation: NO];
@@ -74,7 +74,8 @@
 {
 	if ( _loadingPanel != nil )
 		[self close];
-	
+
+	[_nibTopLevelObjects release];
 	[super dealloc];
 }
 
@@ -82,7 +83,7 @@
 {
 	if ( [_loadingPanel isSheet] )
 	{
-		[NSApp endSheet: _loadingPanel];
+		[[_loadingPanel sheetParent] endSheet: _loadingPanel];
 		[_loadingPanel close]; //will be released (panel has style "release when close")
 		
 		_loadingPanel = nil;
@@ -170,7 +171,7 @@
 		if ( _loadingPanelModalSession != 0 )
 		{
 			if ( [[NSApplication sharedApplication] runModalSession: _loadingPanelModalSession]
-																			!= NSRunContinuesResponse )
+																			!= NSModalResponseContinue )
 			{
 				NSAssert( NO, @"run loop stopped by unknown party" );
 			}

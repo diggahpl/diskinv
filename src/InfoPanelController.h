@@ -24,6 +24,7 @@
 	IBOutlet NSWindow* _infoPanel;
 	IBOutlet NSTextField* _displayNameTextField;
 	IBOutlet NSImageView* _iconImageView;
+	NSArray *_nibTopLevelObjects;
 }
 
 + (InfoPanelController*) sharedController;

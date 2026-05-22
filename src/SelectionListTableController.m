@@ -39,8 +39,10 @@
 	FileSystemDoc *doc = [self document];
 
 	NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 	NSDrawer *drawer = [_windowController selectionListDrawer];
-	
+
 	[notificationCenter addObserver: self
 						   selector: @selector(onDrawerClosed:)
 							   name: NSDrawerDidCloseNotification
@@ -49,14 +51,15 @@
 						   selector: @selector(onDrawerOpened:)
 							   name: NSDrawerWillOpenNotification
 							 object: drawer];
-	
+
     [notificationCenter addObserver: self
 						   selector: @selector(windowWillClose:)
 							   name: NSWindowWillCloseNotification
 							 object: [_windowController window]];
-	
+
 	if ( [drawer state] == NSDrawerClosedState )
 		[_selectionListArrayController suspendArrangedObjectsUpdates];
+#pragma clang diagnostic pop
 	
 	//set up KVO
 	[[NSUserDefaultsController sharedUserDefaultsController] addObserver: self

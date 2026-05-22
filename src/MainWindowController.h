@@ -5,6 +5,12 @@
 #import <TreeMapView/TreeMapView.h>
 #import "OAToolbarWindowControllerEx.h"
 
+// NSDrawer was deprecated in 10.13 with the suggestion to "consider using NSSplitViewController",
+// but it still works on macOS 26 and migrating is a UI redesign. Suppress the deprecation warnings
+// at the boundary so callers of this header don't get noise either.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 @interface MainWindowController : OAToolbarWindowControllerEx
 {
     IBOutlet NSDrawer *_kindsDrawer;
@@ -44,3 +50,5 @@
 - (IBAction) performRenderBenchmark:(id)sender;
 - (IBAction) performLayoutBenchmark:(id)sender;
 @end
+
+#pragma clang diagnostic pop

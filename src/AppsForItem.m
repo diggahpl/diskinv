@@ -89,7 +89,7 @@
 			}
 		}
 		
-		[_additionalAppURLs sortOnAttribute: @selector(name) usingSelector: @selector(caseInsensitiveCompare:)];
+		[_additionalAppURLs sortUsingDescriptors: @[[NSSortDescriptor sortDescriptorWithKey: @"name" ascending: YES selector: @selector(caseInsensitiveCompare:)]]];
 	}
 	
 	return _additionalAppURLs;
@@ -148,9 +148,9 @@
             result = [NSMutableArray arrayWithArray:(NSArray*)outURLs];
             
             // filter out .exe files
-            int i, cnt = [result count];
+            NSInteger i, cnt = [result count];
             NSURL *url;
-            
+
             for (i=(cnt-1);i>=0;i--)
             {
                 url = [result objectAtIndex:i];

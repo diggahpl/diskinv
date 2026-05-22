@@ -26,6 +26,7 @@
     IBOutlet NSPanel* _loadingPanel;
     IBOutlet NSProgressIndicator* _loadingProgressIndicator;
     IBOutlet NSButton* _loadingCancelButton;
+    NSArray *_nibTopLevelObjects;
 }
 
 - (id) init; //will start modal session immediately

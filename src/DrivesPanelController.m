@@ -78,13 +78,15 @@
 	[self rebuildVolumesArray];
 	
 	//load Nib with volume panel
-    if ( ![NSBundle loadNibNamed: @"VolumesPanel" owner: self] )
+    NSArray *topLevelObjects = nil;
+    if ( ![[NSBundle mainBundle] loadNibNamed: @"VolumesPanel" owner: self topLevelObjects: &topLevelObjects] )
 	{
 		[self release];
 		self = nil;
 	}
 	else
 	{
+		_nibTopLevelObjects = [topLevelObjects retain];
 		//open volume on double clicked (can't be configured in IB?)
 		[_volumesTableView setDoubleAction: @selector(openVolume:)];
 		
@@ -105,7 +107,8 @@
 
     [_volumes release];
 	[_progressIndicators release];
-	
+	[_nibTopLevelObjects release];
+
     [super dealloc];
 }
 
@@ -282,7 +285,7 @@
 		if ( [progrInd superview] != tableView )
 			[tableView addSubview: progrInd];
 		
-		int colIndex = [tableView columnWithIdentifier: [tableColumn identifier]];
+		NSInteger colIndex = [tableView columnWithIdentifier: [tableColumn identifier]];
 		NSRect cellRect = [tableView frameOfCellAtColumn: colIndex row: row];
 		
 		const float progrIndThickness = NSProgressIndicatorPreferredLargeThickness; 

@@ -112,7 +112,7 @@
 			return _freeSpaceItem;
 	}
 	else
-		return [fsItem childAtIndex: index];
+		return [fsItem childAtIndex: (unsigned)index];
 }
 
 - (BOOL) treeMapView: (TreeMapView*) view isNode: (id) item
@@ -196,7 +196,7 @@
 
 - (void) treeMapView: (TreeMapView*) view willShowMenuForEvent: (NSEvent*) event
 {
-    if ( [event type] == NSRightMouseDown )
+    if ( [event type] == NSEventTypeRightMouseDown )
     {
         //right mouse click -> context menu
         //select the item hit by the click,

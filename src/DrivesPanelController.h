@@ -26,6 +26,7 @@
 	IBOutlet NSArrayController *_volumesController;
     
     unsigned long long _maxVolumeSize; // size of largest volumes
+    NSArray *_nibTopLevelObjects;
 }
 
 + (DrivesPanelController*) sharedController;

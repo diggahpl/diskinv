@@ -85,7 +85,7 @@
 	poofEffectPoint = [view convertPoint: poofEffectPoint toView: nil];
 	
 	//convert window to screen coords
-	poofEffectPoint = [[view window] convertBaseToScreen: poofEffectPoint];
+	poofEffectPoint = [[view window] convertPointToScreen: poofEffectPoint];
 	
 	NSSize size = NSMakeSize(NSWidth(rect), NSHeight(rect));
 	
@@ -107,12 +107,14 @@
 		[_splitter setVertical: NO];		
 	}
 	
-	[_splitter setPositionAutosaveName: @"MainWindowSplitter"];
+	[_splitter setAutosaveName: @"MainWindowSplitter"];
 	
     [_kindsDrawer toggle: self];
 	//[_selectionListDrawer toggle: self];
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (NSDrawer*) kindStatisticsDrawer
 {
 	return _kindsDrawer;
@@ -122,6 +124,7 @@
 {
 	return _selectionListDrawer;
 }
+#pragma clang diagnostic pop
 
 #pragma mark -----------------menu and toolbar actions-----------------------
 
@@ -240,21 +243,25 @@
 		NSString *msg = [NSString stringWithFormat: NSLocalizedString(@"The item \"%@\" could not be moved to the trash.",@""),
 													[selectedItem displayName]];
 
-		NSBeginAlertSheet( msg,
-                          NSLocalizedString(@"No",@""),
-                          NSLocalizedString(@"Yes",@""),
-						  nil,
-						  [self window],
-						  self,
-						  nil,
-						  @selector(moveToTrashSheetDidDismiss: returnCode: contextInfo:),
-						  selectedItem,
-						  @"%@", NSLocalizedString(@"Would you like to delete it immediately?",@""));
+		NSAlert *alert = [[NSAlert alloc] init];
+		[alert setMessageText: msg];
+		[alert setInformativeText: NSLocalizedString(@"Would you like to delete it immediately?",@"")];
+		[alert addButtonWithTitle: NSLocalizedString(@"No",@"")];	//NSAlertFirstButtonReturn
+		[alert addButtonWithTitle: NSLocalizedString(@"Yes",@"")];	//NSAlertSecondButtonReturn
+		FSItem *capturedItem = [selectedItem retain];
+		[alert beginSheetModalForWindow: [self window]
+					  completionHandler: ^(NSModalResponse returnCode) {
+			[self moveToTrashSheetDidDismiss: nil
+								  returnCode: (int)returnCode
+								 contextInfo: capturedItem];
+			[capturedItem release];
+		}];
+		[alert release];
 	}
 	else
 	{
 		[self moveToTrashSheetDidDismiss: nil
-							  returnCode: NSAlertAlternateReturn
+							  returnCode: NSAlertSecondButtonReturn
 							 contextInfo: selectedItem];
 	}
 }
@@ -340,7 +347,11 @@
 	uint64_t doneTime = getTime();
 	
 	NSString *msg = [NSString stringWithFormat: @"rendering %u times took %.2f seconds", count, subtractTime(doneTime, startTime)];
-	NSBeginInformationalAlertSheet( msg, nil, nil, nil, [_splitter window], nil, nil, nil, nil, @"" );
+	NSAlert *alert = [[NSAlert alloc] init];
+	[alert setAlertStyle: NSAlertStyleInformational];
+	[alert setMessageText: msg];
+	[alert beginSheetModalForWindow: [_splitter window] completionHandler: nil];
+	[alert release];
 }
 
 - (IBAction) performLayoutBenchmark:(id)sender
@@ -354,7 +365,11 @@
 	uint64_t doneTime = getTime();
 	
 	NSString *msg = [NSString stringWithFormat: @"layout calculation %u times took %.2f seconds", count, subtractTime(doneTime, startTime)];
-	NSBeginInformationalAlertSheet( msg, nil, nil, nil, [_splitter window], nil, nil, nil, nil, @"" );
+	NSAlert *alert = [[NSAlert alloc] init];
+	[alert setAlertStyle: NSAlertStyleInformational];
+	[alert setMessageText: msg];
+	[alert beginSheetModalForWindow: [_splitter window] completionHandler: nil];
+	[alert release];
 }
 
 #pragma mark -----------------UI elment validation-----------------------
@@ -436,13 +451,19 @@
     }
     else if ( menuAction == @selector(toggleFileKindsDrawer:) )
     {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         SET_TITLE_AND_IMAGE( [_kindsDrawer state] == NSDrawerClosedState,
 							 @"Show File Kind Statistics", @"Hide File Kind Statistics" );
+#pragma clang diagnostic pop
     }
     else if ( menuAction == @selector(toggleSelectionListDrawer:) )
     {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         SET_TITLE( [_selectionListDrawer state] == NSDrawerClosedState,
 							 @"Show Selection List", @"Hide Selection List" );
+#pragma clang diagnostic pop
     }
     else if ( menuAction == @selector(selectParentItem:) )
     {
@@ -558,9 +579,9 @@
 	}
 	
 	//remove any supernumerary menu items (removed all items if is there is no app which can open this file)
-	unsigned removeMenuItemsFromIndex = ([apps defaultAppURL] != nil) ? [[apps additionalAppURLs] count] +2 : 0;
-	
-	while ( ((unsigned) [_openWithSubMenu numberOfItems]) > removeMenuItemsFromIndex )
+	NSUInteger removeMenuItemsFromIndex = ([apps defaultAppURL] != nil) ? [[apps additionalAppURLs] count] +2 : 0;
+
+	while ( ((NSUInteger) [_openWithSubMenu numberOfItems]) > removeMenuItemsFromIndex )
 		[_openWithSubMenu removeItemAtIndex: [_openWithSubMenu numberOfItems] -1];
 }
 
@@ -605,7 +626,7 @@
 						 returnCode: (int) returnCode
 						contextInfo: (void*) contextInfo
 {
-	if ( returnCode != NSAlertAlternateReturn )
+	if ( returnCode != NSAlertSecondButtonReturn )
 		return;
 	
 	FileSystemDoc *doc = [self document];
@@ -643,13 +664,13 @@
         NSString *msg = [NSString stringWithFormat: NSLocalizedString(@"\"%@\" cannot be moved to the trash by Disk Inventory X.",@""), [selectedItem displayName] ];
         NSString *subMsg = error.localizedFailureReason; //NSLocalizedString( @"Maybe you do not have sufficient access privileges.", @"" );
         
-        NSBeginInformationalAlertSheet( msg,
-                                       NSLocalizedString(@"OK",@""),
-                                       nil, nil,
-                                       [self window],
-                                       nil, NULL, NULL, nil,
-                                       @"%@",
-                                       subMsg );
+        NSAlert *failAlert = [[NSAlert alloc] init];
+        [failAlert setAlertStyle: NSAlertStyleInformational];
+        [failAlert setMessageText: msg];
+        [failAlert setInformativeText: subMsg ?: @""];
+        [failAlert addButtonWithTitle: NSLocalizedString(@"OK",@"")];
+        [failAlert beginSheetModalForWindow: [self window] completionHandler: nil];
+        [failAlert release];
  	}
 }
 

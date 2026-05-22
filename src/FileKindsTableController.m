@@ -87,12 +87,15 @@
 
 - (IBAction) showFilesInSelectionList: (id) sender
 {
-	int selectionListDrawerState = [[_windowController selectionListDrawer] state];
-	
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+	NSInteger selectionListDrawerState = [[_windowController selectionListDrawer] state];
+
 	if ( selectionListDrawerState == NSDrawerClosingState || selectionListDrawerState == NSDrawerClosedState )
 		[[_windowController selectionListDrawer] toggle: self];
-	
-	int selectedRow = [_tableView selectedRow];
+#pragma clang diagnostic pop
+
+	NSInteger selectedRow = [_tableView selectedRow];
 	NSAssert( selectedRow >= 0, @"kinds tableview should have a selection" );
 	
 	FileKindStatistic *kindStat = [(NSArray*)[_kindsTableArrayController arrangedObjects] objectAtIndex: selectedRow];

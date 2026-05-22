@@ -195,7 +195,7 @@
             {
                 if ([uti isEqualToString: (__bridge NSString *)kUTTypeFlatRTFD])
                 {
-                    NSFileWrapper *tempRTFDData = [[[NSFileWrapper alloc] initWithPath:[url path]] autorelease];
+                    NSFileWrapper *tempRTFDData = [[[NSFileWrapper alloc] initWithURL:url options:0 error:NULL] autorelease];
                     [pboard setData:[tempRTFDData serializedRepresentation] forType:NSRTFDPboardType];
                 }
             }

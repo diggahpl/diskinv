@@ -33,13 +33,15 @@
 	self = [super init];
 		
 	//load Nib with info panel
-    if ( ![NSBundle loadNibNamed: @"InfoPanel" owner: self] )
+	NSArray *topLevelObjects = nil;
+    if ( ![[NSBundle mainBundle] loadNibNamed: @"InfoPanel" owner: self topLevelObjects: &topLevelObjects] )
 	{
 		[self release];
 		self = nil;
 	}
 	else
 	{
+		_nibTopLevelObjects = [topLevelObjects retain];
 		/*
 		NSRect frameRect = [_infoView frame];
 		
