@@ -28,12 +28,18 @@
 	if ( ![[NSBundle mainBundle] loadNibNamed: @"LoadingPanel" owner: self topLevelObjects: &topLevelObjects] )
 		NSAssert( NO, @"couldn't load LoadingPanel.nib" );
 	_nibTopLevelObjects = [topLevelObjects retain];
-	
+
+	//the nib has "release when closed = YES"; turn it off so the panel's
+	//lifetime is governed by _nibTopLevelObjects only. Otherwise [_loadingPanel
+	//close] frees the panel while the array still holds a stale pointer to it,
+	//producing a zombie crash when the controller is later released.
+	[_loadingPanel setReleasedWhenClosed: NO];
+
 	[_loadingProgressIndicator setUsesThreadedAnimation: NO];
     [_loadingProgressIndicator startAnimation: self];
-	
+
 	[_loadingPanel display];
-	
+
 	//start modal session for the progress window
 	_loadingPanelModalSession = [[NSApplication sharedApplication] beginModalSessionForWindow: _loadingPanel];
 	_lastEventLoopRun = 0;
@@ -52,7 +58,10 @@
 	if ( ![[NSBundle mainBundle] loadNibNamed: @"LoadingPanel" owner: self topLevelObjects: &topLevelObjects] )
 		NSAssert( NO, @"couldn't load LoadingPanel.nib" );
 	_nibTopLevelObjects = [topLevelObjects retain];
-	
+
+	//see init - same reason.
+	[_loadingPanel setReleasedWhenClosed: NO];
+
 	[window beginSheet: _loadingPanel completionHandler: nil];
 
 	[_loadingPanel setWorksWhenModal: YES];
@@ -84,7 +93,7 @@
 	if ( [_loadingPanel isSheet] )
 	{
 		[[_loadingPanel sheetParent] endSheet: _loadingPanel];
-		[_loadingPanel close]; //will be released (panel has style "release when close")
+		[_loadingPanel close]; //just hides; ownership stays with _nibTopLevelObjects
 		
 		_loadingPanel = nil;
 		_loadingProgressIndicator = nil;

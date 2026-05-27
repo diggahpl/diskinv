@@ -165,7 +165,7 @@ BOOL g_EnableLogging;
 
 - (IBAction) closeDonationPanel: (id) sender;
 {
-	[_donationPanel close]; //will release itself
+	[_donationPanel close]; //just hides; ownership stays with _donationPanelNibTopLevelObjects
 	_donationPanel = nil;
 }
 
@@ -204,6 +204,12 @@ BOOL g_EnableLogging;
 		NSArray *topLevelObjects = nil;
 		[[NSBundle mainBundle] loadNibNamed: @"DonationPanel" owner: self topLevelObjects: &topLevelObjects];
 		_donationPanelNibTopLevelObjects = [topLevelObjects retain];
+
+		//the nib has "release when closed = YES"; turn it off so the panel's
+		//lifetime is governed by _donationPanelNibTopLevelObjects only. Otherwise
+		//closing the panel frees it while the array still holds a stale pointer,
+		//producing a zombie -release crash later on pool drain.
+		[_donationPanel setReleasedWhenClosed: NO];
 		[_donationPanel setWorksWhenModal: YES];
 	}
 	

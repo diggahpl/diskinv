@@ -42,6 +42,12 @@
 	else
 	{
 		_nibTopLevelObjects = [topLevelObjects retain];
+
+		//the nib has "release when closed = YES"; turn it off so the panel's
+		//lifetime is governed by _nibTopLevelObjects only. Otherwise closing
+		//the info panel frees it while the array still holds a stale pointer,
+		//which later produces a zombie -release crash on pool drain.
+		[_infoPanel setReleasedWhenClosed: NO];
 		/*
 		NSRect frameRect = [_infoView frame];
 		
