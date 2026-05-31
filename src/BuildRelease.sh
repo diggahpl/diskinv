@@ -2,36 +2,20 @@
 #
 # Build a release of Disk Inventory Xs with a consistent code signature.
 #
-# Why this exists (issue #2):
-#   The embedded TreeMapView.framework was ad-hoc signed at build time while
-#   the .app was signed with a real Apple identity. Hardened Runtime refused
-#   to load the framework because the Team IDs did not match, and the .app
-#   crashed during dyld setup before reaching main().
-#
-# What this script does:
-#   1. Build TreeMapView.framework from treemap/ (so we never ship a stale
-#      pre-built binary).
-#   2. Copy the freshly-built framework into src/Frameworks/ where the app's
-#      project references it.
-#   3. Build the app.
-#   4. Re-sign the embedded framework and then the .app with the same
-#      identity, using Hardened Runtime. This is explicit so we do not
-#      depend on Xcode's CodeSignOnCopy behavior for nested binaries.
-#   5. Verify the signature is internally consistent.
+# The treemap rendering code (formerly TreeMapView.framework) is now compiled
+# directly into the app target, so there is no embedded framework to build,
+# stage, or re-sign separately. This script just builds the app and signs it
+# with Hardened Runtime.
 #
 # Override the signing identity by exporting SIGN_IDENTITY before running:
 #   SIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" ./BuildRelease.sh
-# The default is "-" (ad-hoc), which is enough to fix the crash for local
-# builds but is not suitable for distribution. See NOTARIZATION.md for the
-# distribution recipe.
+# The default is "-" (ad-hoc), which is enough for local builds but is not
+# suitable for distribution. See NOTARIZATION.md for the distribution recipe.
 
 set -eu
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-TREEMAP_PROJECT="$REPO_ROOT/treemap/TreeMapView.xcodeproj"
 APP_PROJECT="$SCRIPT_DIR/Disk Inventory X.xcodeproj"
-FRAMEWORKS_DIR="$SCRIPT_DIR/Frameworks"
 ENTITLEMENTS="$SCRIPT_DIR/Disk Inventory X.entitlements"
 SIGN_IDENTITY="${SIGN_IDENTITY:--}"
 
@@ -42,30 +26,6 @@ XCODEBUILD_SIGN_FLAGS="CODE_SIGN_IDENTITY= CODE_SIGN_STYLE=Manual DEVELOPMENT_TE
 
 # Build arm64-only. The "s" in "Disk Inventory Xs" is for Silicon.
 XCODEBUILD_ARCH_FLAGS="ARCHS=arm64 VALID_ARCHS=arm64 ONLY_ACTIVE_ARCH=NO"
-
-echo "==> Building TreeMapView.framework"
-rm -rf "$REPO_ROOT/treemap/build"
-# shellcheck disable=SC2086
-xcodebuild \
-    -project "$TREEMAP_PROJECT" \
-    -configuration Release \
-    $XCODEBUILD_SIGN_FLAGS \
-    $XCODEBUILD_ARCH_FLAGS \
-    build
-
-FRAMEWORK_BUILT_DIR="$(xcodebuild -project "$TREEMAP_PROJECT" -configuration Release -showBuildSettings 2>/dev/null \
-    | awk -F' = ' '/^ *BUILT_PRODUCTS_DIR =/ {print $2; exit}')"
-FRAMEWORK_BUILT="$FRAMEWORK_BUILT_DIR/TreeMapView.framework"
-
-if [ ! -d "$FRAMEWORK_BUILT" ]; then
-    echo "error: framework not found at $FRAMEWORK_BUILT" >&2
-    exit 1
-fi
-
-echo "==> Staging framework into $FRAMEWORKS_DIR/"
-mkdir -p "$FRAMEWORKS_DIR"
-rm -rf "$FRAMEWORKS_DIR/TreeMapView.framework"
-cp -R "$FRAMEWORK_BUILT" "$FRAMEWORKS_DIR/"
 
 echo "==> Building app"
 rm -rf "$SCRIPT_DIR/build"
@@ -88,19 +48,10 @@ if [ ! -d "$APP_BUILT" ]; then
     exit 1
 fi
 
-echo "==> Stripping framework headers (release hygiene)"
-find "$APP_BUILT/Contents/Frameworks" -type d \( -name Headers -o -name PrivateHeaders \) -print0 | xargs -0 rm -rf
-
 echo "==> Re-signing with identity: $SIGN_IDENTITY"
-# Sign inner-out: framework, then main Mach-O, then the .app bundle.
 # The explicit main Mach-O sign is required because we pass CODE_SIGNING_ALLOWED=NO
-# to xcodebuild (Xcode's own CodeSign step trips over the framework header-strip),
-# so the linker leaves the binary unsigned and `codesign <bundle>` won't propagate
-# a signature to an unsigned inner Mach-O.
-codesign --force --options runtime \
-    --sign "$SIGN_IDENTITY" \
-    "$APP_BUILT/Contents/Frameworks/TreeMapView.framework"
-
+# to xcodebuild, so the linker leaves the binary unsigned and `codesign <bundle>`
+# won't propagate a signature to an unsigned inner Mach-O.
 EXE_NAME="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP_BUILT/Contents/Info.plist")"
 codesign --force --options runtime \
     --sign "$SIGN_IDENTITY" \
@@ -117,7 +68,5 @@ codesign --verify --deep --strict --verbose=2 "$APP_BUILT"
 echo "==> Done"
 echo "    $APP_BUILT"
 echo
-echo "Framework Team ID:"
-codesign -dvv "$APP_BUILT/Contents/Frameworks/TreeMapView.framework" 2>&1 | grep -E "TeamIdentifier|Authority|Signature" || true
 echo "App Team ID:"
 codesign -dvv "$APP_BUILT" 2>&1 | grep -E "TeamIdentifier|Authority|Signature" || true
