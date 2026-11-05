@@ -1,1 +1,59 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd"><html><head>	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">	<meta name="AppleTitle" content="Disk Inventory Xs Help"></meta>	<META NAME="AppleIcon" CONTENT="Help/images/DiskInventoryXIcon.jpg">	<meta name="copyright" content="Copyright 2004-2020 Tjark Derlien. All rights reserved.">	<link href="styles/task_style.css" rel="stylesheet" media="all">	<title>Disk Inventory Xs Help</title></head><body><h1>Quick Start</h1><p>Open the &quot;File&quot; menu and select &quot;Open Folder...&quot;. Select any folder or volume which you would like to analyze. A window should open stating &quot;Loading bla bla&quot;. Please be patient if you have selected a large folder or a whole volume with lots of files and folders.<br>After the loading is completed (the progress window has closed) the main window should open where you see on the left half a finder-like view of the selected folder/volume and on the right half a graphical view:</p><p><img src="images/overview.jpg" width="862" height="452"></p><p>(1) This finder-like view shows the files and folders with their sizes.<br>  (2) The treemap shows the files and folders in a way that should easily made clear which files and folders occupy most of the space. The selection in the finder-like view and the treemap is synchronized. (Please read (4) for the meaning of the different colors.)<br>  (3) Here some information is displayed about the file pointed at in the treemap.<br>  (4) The file type statistic informs about the count of files of a specific type and the sum of their sizes. The list is sorted by size in descending order. Each type has a color which is also used in the treemap (2). The same color is used throughout all opened folders for each type (see below).</p><p>Through the &quot;View&quot; menu you can choose whether you would like to view package contents, you can zoom into folders and some more things which should help analyzing the disk usage.</p><h1>A word on the use of colors</h1><p>  Disk Inventory Xs has 12 predefined colors which are assigned to the 8 &quot;largest kinds&quot; (the idea behind this is that it's getting harder and harder to distinguish the colors if there are more than 12). <br>  The rest of the kinds are assigned to the grey color. This color assignment is made across all opened folders (the color assignment is shared) - files of the same kind have the same color in all opened folders. <br>  So if you load the first folder all 12 colors may be assigned to some kinds (if the folder contains files of at least 12 different kinds). If you now open a second folder with totally different file kinds, there are no more colors left and all kinds of the second folder are assigned to the grey color. <br>  The only way to reset the assignments is currently to restart DIX.</p></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="AppleTitle" content="Disk Inventory Xs Help">
+<meta name="AppleIcon" content="Help/images/DiskInventoryXIcon.png">
+<meta name="copyright" content="Copyright 2004 Tjark Derlien. All rights reserved.">
+<link href="styles/help.css" rel="stylesheet">
+<title>Disk Inventory Xs Help</title>
+</head>
+<body>
+
+<h1>Quick Start</h1>
+
+<p>Choose <b>File &#9656; Open Folder&hellip;</b> and pick any folder or volume you would like to analyze (the volumes panel at launch lists your disks as well). A progress window shows while the folder is scanned; a large folder or a whole volume takes a while. When the scan is done the main window opens:</p>
+
+<figure>
+<img src="images/overview.jpg" alt="The main window: file tree, treemap, kinds list and information card" width="1760" height="1136">
+</figure>
+
+<ol>
+<li><b>File tree.</b> The files and folders with their sizes. The thin bar under each size compares the item with the largest item in the same folder. A file's icon carries the color of its kind, the same color the file has on the map.</li>
+<li><b>Treemap.</b> Every rectangle is a file, and its area is the file's size. Folders are outlined and named; big files carry their name and size. The selection in the tree and on the map is synchronized: click a rectangle to select the file, or select a file in the tree to see where it lies. (See &ldquo;A word on the use of colors&rdquo; below.)</li>
+<li><b>Status bar.</b> The name, folder, kind and size of the item under the pointer, or of the selected one, or of the folder the map shows when there is neither.</li>
+<li><b>Kinds.</b> The first tab of the sidebar lists every kind of file with the sum of its sizes and the number of files, biggest first; the bar under a kind's name compares it with the biggest kind. The chip is the kind's color on the map. The second tab, <b>Selection</b>, lists all files of one kind (choose the kind in the pop-up menu above the list; the search field narrows it down). Selecting a file there selects it everywhere.</li>
+<li><b>Information.</b> Below the tabs: the icon, name, kind, dates, owner, permissions, path and the application that opens the selected item, or of the folder the map shows when nothing is selected.</li>
+<li><b>Toolbar.</b> Zoom into a folder or out of it, reveal the selection in the Finder, refresh, show package contents, show or hide the information card, show or hide the sidebar, and move the selection to the Trash.</li>
+</ol>
+
+<h1>Focus on one kind</h1>
+
+<p>Click a kind in the kinds list and every other kind goes dark and loses its names, so only the files of that kind shine: where are all my disk images, my videos, my archives? A pill at the upper right of the map names the kind and its total size; click its &times; to leave the focus. While a kind is focused the list keeps showing it, even if you select other items meanwhile.</p>
+
+<figure>
+<img src="images/focus.jpg" alt="The map focused on the kind Disk Image" width="1500" height="1284">
+<figcaption>The map focused on &ldquo;Disk Image&rdquo;: only its files keep their color.</figcaption>
+</figure>
+
+<h1>The window and its parts</h1>
+
+<p>The sidebar and the information card can be hidden to give the map more room: use the toolbar buttons or the <b>Window</b> menu (<b>File Kind Statistics</b>, <b>Selection List</b>, <b>Information</b>). The window remembers whether the sidebar was shown and which tab was on top.</p>
+
+<p>In the <b>View</b> menu you choose whether package contents (applications and other bundles) are shown as folders, whether free and other space are drawn on the map, whether physical instead of logical file sizes count, you zoom into folders and out of them, and you choose whether the tree sits beside the map or above it (<b>Split Horizontally</b> / <b>Split Vertically</b>).</p>
+
+<h1>A word on the use of colors</h1>
+
+<p>Disk Inventory Xs has 12 predefined colors. They are assigned to the 12 &ldquo;largest kinds&rdquo; of the first folder you open (the idea behind this is that it gets harder and harder to tell colors apart when there are more than 12). The palette is chosen to stay distinguishable for people with the usual kinds of color blindness.</p>
+
+<p>The remaining kinds share a dim grey and show a dim dot instead of a chip in the kinds list. You cannot tell them apart by color, but the tree, the names on the map and the <b>Selection</b> tab say what they are.</p>
+
+<p>The color assignment is made across all opened folders: files of the same kind have the same color in all opened folders. So if the first folder uses all 12 colors and you open a second one with totally different kinds, there are no colors left and its kinds are grey. The only way to reset the assignment is to quit and start Disk Inventory Xs again.</p>
+
+<h1>Appearance and accessibility</h1>
+
+<p>Disk Inventory Xs always uses a dark appearance. It follows the display settings in <b>System Settings &#9656; Accessibility &#9656; Display</b>: with <b>Reduce Transparency</b> the glass panels become solid, with <b>Increase Contrast</b> outlines turn white and borders firmer, and with <b>Reduce Motion</b> the sidebar no longer slides.</p>
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+/* Disk Inventory Xs Help: light and dark, set in the system font */
+:root {
+    color-scheme: light dark;
+    --text: #1d1d1f;
+    --quiet: #5b5f6a;
+    --accent: #007c91;
+    --rule: rgba(0, 0, 0, 0.12);
+    --card: rgba(0, 0, 0, 0.04);
+    --page: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text: #ececf1;
+        --quiet: #a3a8b8;
+        --accent: #00e5ff;
+        --rule: rgba(255, 255, 255, 0.14);
+        --card: rgba(255, 255, 255, 0.06);
+        --page: #0b0f1a;
+    }
+}
+
+html {
+    background: var(--page);
+}
+
+body {
+    margin: 0 auto;
+    padding: 28px 32px 48px;
+    max-width: 920px;
+    color: var(--text);
+    font: 15px/1.55 -apple-system, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1 {
+    margin: 36px 0 12px;
+    font-size: 26px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+}
+
+h1:first-child {
+    margin-top: 0;
+}
+
+h2 {
+    margin: 28px 0 8px;
+    font-size: 18px;
+    font-weight: 650;
+}
+
+p, li {
+    margin: 0 0 12px;
+}
+
+ol, ul {
+    padding-left: 24px;
+}
+
+li::marker {
+    color: var(--accent);
+    font-weight: 650;
+}
+
+figure {
+    margin: 22px 0;
+}
+
+figure img, p img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid var(--rule);
+}
+
+figcaption {
+    margin-top: 8px;
+    color: var(--quiet);
+    font-size: 13px;
+}
+
+code, kbd {
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: var(--card);
+    font: 13px/1 ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+.note {
+    padding: 10px 14px;
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    background: var(--card);
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}

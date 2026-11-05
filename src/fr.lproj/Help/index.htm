@@ -1,81 +1,59 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="fr">
 <head>
-
-	
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-
-	
-  <meta name="AppleTitle" content="Disk Inventory Xs Help">
-
-	
-  <meta name="AppleIcon" content="Help/images/DiskInventoryXIcon.jpg">
-
-	
-  <meta name="copyright" content="Copyright 2004 Tjark Derlien. All rights reserved.">
-
-	
-  <link href="styles/task_style.css" rel="stylesheet" media="all">
-
-	
-  <title>Disk Inventory Xs Help</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="AppleTitle" content="Disk Inventory Xs Help">
+<meta name="AppleIcon" content="Help/images/DiskInventoryXIcon.png">
+<meta name="copyright" content="Copyright 2004 Tjark Derlien. All rights reserved.">
+<link href="styles/help.css" rel="stylesheet">
+<title>Disk Inventory Xs Help</title>
 </head>
-
-
 <body>
 
 <h1>D&eacute;marrage</h1>
 
-<p>Ouvrez le menu&nbsp;"Fichier" et s&eacute;lectionnez&nbsp;"Ouvrir
-dossier...". S&eacute;lectionnez tous les dossiers ou volume que vous
-voulez analyser. Une fen&ecirc;tre va s'ouvrir en affichant "Chargement
-de&nbsp;bla bla". Soyez patient si vous avez s&eacute;lectionn&eacute;
-un gros dossier ou tout un volume avec beaucoup de fichiers et dossiers.<br>
-D&egrave;s que le chargement est termin&eacute; (la fen&ecirc;tre de
-suivi a disparu) la fen&ecirc;tre principale va s'ouvrir et vous voyez
-sur la moiti&eacute; gauche une vue du style Finder du dossier/volume
-s&eacute;lectionn&eacute; et sur la moiti&eacute; droite une vue
-graphique&nbsp;:</p>
+<p>Choisissez <b>Fichier &#9656; Ouvrir dossier&hellip;</b> et s&eacute;lectionnez le dossier ou le volume que vous voulez analyser (le panneau des volumes affich&eacute; au lancement liste aussi vos disques). Une fen&ecirc;tre de suivi s&rsquo;affiche pendant l&rsquo;analyse&nbsp;; un gros dossier ou un volume entier demande un peu de patience. Quand l&rsquo;analyse est termin&eacute;e, la fen&ecirc;tre principale s&rsquo;ouvre&nbsp;:</p>
 
-<p><img src="images/overview.jpg" height="452" width="862"></p>
+<figure>
+<img src="images/overview.jpg" alt="La fen&ecirc;tre principale : arborescence, carte, liste des types et fiche d&rsquo;information" width="1760" height="1136">
+</figure>
 
-<p>(1) Cette vue de style Finder montre les fichiers et dossiers avec leur tailles.<br>
-(2) La carte montre les fichiers et dossiers d'une fa&ccedil;on qui met
-en &eacute;vidence quels fichiers et dossiers occupent le plus de
-place. La s&eacute;lection dans la liste des fichiers/dossiers et la
-carte est synchronis&eacute;e. (Voir&nbsp;(4) pour la signification des
-diff&eacute;rentes couleurs.)<br>
+<ol>
+<li><b>Arborescence.</b> Les fichiers et dossiers avec leur taille. La fine barre sous chaque taille compare l&rsquo;&eacute;l&eacute;ment au plus gros &eacute;l&eacute;ment du m&ecirc;me dossier. L&rsquo;ic&ocirc;ne d&rsquo;un fichier porte la couleur de son type, la m&ecirc;me que sur la carte.</li>
+<li><b>Carte.</b> Chaque rectangle est un fichier et sa surface correspond &agrave; sa taille. Les dossiers sont cern&eacute;s et nomm&eacute;s&nbsp;; les gros fichiers affichent leur nom et leur taille. La s&eacute;lection dans l&rsquo;arborescence et sur la carte est synchronis&eacute;e&nbsp;: cliquez sur un rectangle pour s&eacute;lectionner le fichier, ou s&eacute;lectionnez un fichier dans l&rsquo;arborescence pour voir o&ugrave; il se trouve. (Voir &laquo;&nbsp;Un mot sur l&rsquo;utilisation des couleurs&nbsp;&raquo; ci-dessous.)</li>
+<li><b>Barre d&rsquo;&eacute;tat.</b> Le nom, le dossier, le type et la taille de l&rsquo;&eacute;l&eacute;ment sous le pointeur, ou de l&rsquo;&eacute;l&eacute;ment s&eacute;lectionn&eacute;, ou du dossier affich&eacute; par la carte s&rsquo;il n&rsquo;y a ni l&rsquo;un ni l&rsquo;autre.</li>
+<li><b>Types.</b> Le premier onglet de la colonne lat&eacute;rale liste chaque type de fichier avec la somme de ses tailles et le nombre de fichiers, du plus gros au plus petit&nbsp;; la barre sous le nom d&rsquo;un type le compare au plus gros type. La pastille est la couleur du type sur la carte. Le second onglet, <b>S&eacute;lection</b>, liste tous les fichiers d&rsquo;un type (choisissez le type dans le menu local au-dessus de la liste&nbsp;; le champ de recherche restreint la liste). S&eacute;lectionner un fichier ici le s&eacute;lectionne partout.</li>
+<li><b>Information.</b> Sous les onglets&nbsp;: l&rsquo;ic&ocirc;ne, le nom, le type, les dates, le propri&eacute;taire, les permissions, le chemin et l&rsquo;application qui ouvre l&rsquo;&eacute;l&eacute;ment s&eacute;lectionn&eacute; &mdash; ou du dossier affich&eacute; par la carte si rien n&rsquo;est s&eacute;lectionn&eacute;.</li>
+<li><b>Barre d&rsquo;outils.</b> Zoomer dans un dossier ou en sortir, afficher la s&eacute;lection dans le Finder, actualiser, afficher le contenu des paquets, afficher ou masquer la fiche d&rsquo;information, afficher ou masquer la colonne lat&eacute;rale, et placer la s&eacute;lection dans la corbeille.</li>
+</ol>
 
-  (3) Ici quelques informations sur le fichier point&eacute; sur la carte.<br>
-(4) Les statistiques par type de fichier donnent le nombre de fichiers
-pour un type sp&eacute;cifique et la somme de leur tailles. La liste
-est tri&eacute;e par taille en ordre d&eacute;croissant. Chaque type de
-fichier a une couleur qui est aussi utilis&eacute;e dans la carte (2).
-La m&ecirc;me couleur est utilis&eacute;e pour chaque type pour tous
-les dossiers ouverts (voir ci-dessous).</p>
+<h1>Se concentrer sur un type</h1>
 
-<p>Dans le menu&nbsp;"Affichage" vous pouvez choisir si vous
-pr&eacute;f&eacute;rez voir le contenu des paquets, vous pouvez zoomer
-dans les dossiers et quelques autres choses qui aideront &agrave;
-analyser l'utilisation de l'espace disque.</p>
+<p>Cliquez sur un type dans la liste&nbsp;: tous les autres types s&rsquo;assombrissent et perdent leurs noms, si bien que seuls les fichiers de ce type brillent&nbsp;: o&ugrave; sont toutes mes images disque, mes vid&eacute;os, mes archives&nbsp;? Une pastille en haut &agrave; droite de la carte indique le type et sa taille totale&nbsp;; cliquez sur sa croix &times; pour quitter ce mode. Tant qu&rsquo;un type est s&eacute;lectionn&eacute; de la sorte, la liste continue de l&rsquo;afficher, m&ecirc;me si vous s&eacute;lectionnez d&rsquo;autres &eacute;l&eacute;ments entre-temps.</p>
 
-<h1>Un mot sur l'utilisation des couleurs</h1>
+<figure>
+<img src="images/focus.jpg" alt="La carte concentr&eacute;e sur le type Disk Image" width="1500" height="1284">
+<figcaption>La carte concentr&eacute;e sur &laquo;&nbsp;Disk Image&nbsp;&raquo; : seuls ses fichiers gardent leur couleur.</figcaption>
+</figure>
 
-<p> Disk Inventory Xs a 12 couleurs pr&eacute;d&eacute;finies qui sont
-affect&eacute;es au 12 "plus gros types" (l'id&eacute;e derri&egrave;re
-&ccedil;a est qu'il est de plus en plus difficile de distinguer les
-couleurs si elles sont plus de 12). <br>
-Le reste des types utilisent la couleur grise. Cette affectation de
-couleur est faite pour tous les dossiers ouverts (l'affectation de
-couleur est partag&eacute;e) : les fichiers du m&ecirc;me type ont la
-m&ecirc;me couleur dans tous les dossiers ouverts.<br>
-Donc si vous chargez le premier dossier, les 12 couleurs peuvent
-&ecirc;tre affect&eacute;es &agrave; des types (si le dossier contient
-des fichiers d'au moins 12 types diff&eacute;rents). Si vous ouvrez
-ensuite un deuxi&egrave;me dossier avec des types totalement
-diff&eacute;rents, il ne reste plus de couleur et tous les types du
-deuxi&egrave;me dossier utilisent la couleur grise. <br>
-Le seul moyen de refaire les affectations est actuellement de red&eacute;marrer DIX.</p>
+<h1>La fen&ecirc;tre et ses parties</h1>
+
+<p>La colonne lat&eacute;rale et la fiche d&rsquo;information peuvent &ecirc;tre masqu&eacute;es pour laisser plus de place &agrave; la carte&nbsp;: utilisez les boutons de la barre d&rsquo;outils ou le menu <b>Fen&ecirc;tre</b> (<b>Statistiques par type de fichier</b>, <b>Liste de s&eacute;lection</b>, <b>Information</b>). La fen&ecirc;tre se souvient si la colonne lat&eacute;rale &eacute;tait affich&eacute;e et quel onglet &eacute;tait au premier plan.</p>
+
+<p>Dans le menu <b>Affichage</b> vous choisissez si le contenu des paquets (applications et autres bundles) est affich&eacute; comme des dossiers, si l&rsquo;espace libre et l&rsquo;autre espace sont dessin&eacute;s sur la carte, si la taille physique plut&ocirc;t que logique des fichiers compte, vous zoomez dans les dossiers et en sortez, et vous choisissez si l&rsquo;arborescence est &agrave; c&ocirc;t&eacute; de la carte ou au-dessus (<b>Diviser horizontalement</b>).</p>
+
+<h1>Un mot sur l&rsquo;utilisation des couleurs</h1>
+
+<p>Disk Inventory Xs a 12 couleurs pr&eacute;d&eacute;finies. Elles sont affect&eacute;es aux 12 &laquo;&nbsp;plus gros types&nbsp;&raquo; du premier dossier que vous ouvrez (l&rsquo;id&eacute;e derri&egrave;re &ccedil;a est qu&rsquo;il est de plus en plus difficile de distinguer les couleurs si elles sont plus de 12). La palette est choisie pour rester distinguable pour les personnes atteintes des formes courantes de daltonisme.</p>
+
+<p>Les autres types partagent un gris att&eacute;nu&eacute; et affichent un petit point terne au lieu d&rsquo;une pastille dans la liste des types. On ne peut pas les distinguer par la couleur, mais l&rsquo;arborescence, les noms sur la carte et l&rsquo;onglet <b>S&eacute;lection</b> disent ce qu&rsquo;ils sont.</p>
+
+<p>L&rsquo;affectation des couleurs est faite pour tous les dossiers ouverts&nbsp;: les fichiers du m&ecirc;me type ont la m&ecirc;me couleur dans tous les dossiers ouverts. Donc si le premier dossier utilise les 12 couleurs et que vous en ouvrez un deuxi&egrave;me avec des types totalement diff&eacute;rents, il ne reste plus de couleur et ses types sont gris. Le seul moyen de refaire l&rsquo;affectation est de quitter puis de relancer Disk Inventory Xs.</p>
+
+<h1>Apparence et accessibilit&eacute;</h1>
+
+<p>Disk Inventory Xs utilise toujours une apparence sombre. Il suit les r&eacute;glages d&rsquo;affichage de <b>R&eacute;glages Syst&egrave;me &#9656; Accessibilit&eacute; &#9656; Affichage</b>&nbsp;: avec <b>R&eacute;duire la transparence</b> les panneaux de verre deviennent pleins, avec <b>Augmenter le contraste</b> les contours deviennent blancs et les bordures plus nettes, et avec <b>R&eacute;duire les animations</b> la colonne lat&eacute;rale ne glisse plus.</p>
 
 </body>
 </html>
