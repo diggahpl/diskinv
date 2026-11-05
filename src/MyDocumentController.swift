@@ -145,6 +145,11 @@ class MyDocumentController: NSDocumentController {
 
     @objc(applicationWillFinishLaunching:)
     func applicationWillFinishLaunching(_ notification: Notification) {
+        //the dark "Holo Glass" look is the app's own, whatever the system appearance is,
+        //and Help is our own window (see HelpWindowController)
+        Theme.install()
+        HelpWindowController.install()
+
         //verify that our custom DocumentController is in use
         assert(NSDocumentController.shared is MyDocumentController,
                "the shared DocumentController is not our custom class!")

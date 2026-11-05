@@ -67,10 +67,6 @@
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleHelpBookFolder</key>
-	<string>Help</string>
-	<key>CFBundleHelpBookName</key>
-	<string>Disk Inventory Xs Help</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -113,7 +109,7 @@ No data will be read.</string>
 	<string>Disk Inventory Xs needs to access photo libraries to inspect their sizes and other file attributes.
 No data will be read.</string>
 	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
+	<string>DIXApplication</string>
 	<key>NSRemindersUsageDescription</key>
 	<string>Disk Inventory Xs needs to access reminders to inspect their sizes and other file attributes.
 No data will be read.</string>

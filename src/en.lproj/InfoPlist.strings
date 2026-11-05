@@ -1,4 +1,4 @@
 ﻿/* Localized versions of Info.plist keys */
 
-"CFBundleGetInfoString" = "Disk Inventory Xs version 1.2, Tjark Derlien 2022, Mahmoud Lababidi 2026, Przemek Dymarkowski 2026";
+"CFBundleGetInfoString" = "Disk Inventory Xs version 2.1, Tjark Derlien 2022, Mahmoud Lababidi 2026, Przemek Dymarkowski 2026";
 "NSHumanReadableCopyright" = "released under GPL v3 · modified version by Przemek Dymarkowski, 2026";

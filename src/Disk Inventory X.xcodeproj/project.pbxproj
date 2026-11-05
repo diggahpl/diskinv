@@ -18,7 +18,6 @@
 		22C6ECEC41D5FB2669424A51 /* TMVCushionRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1067D9C4D44C037B976B72AA /* TMVCushionRenderer.swift */; };
 		237881429E928C4A362DB427 /* DIXTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53DD77A59DDF11306C10F8E8 /* DIXTableView.swift */; };
 		2F7248AEC391F0624AFFF0E2 /* NSFileManager-Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0742A9C51D4948DC4C86237 /* NSFileManager-Extensions.swift */; };
-		2F9542B010981D00ED77CFA3 /* AppController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D04A8E391BDE18CE106866 /* AppController.swift */; };
 		30CC349CE2D7D87136EC0E40 /* SelectionListController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F4CB9BB1F131935161009F /* SelectionListController.swift */; };
 		3398EFE8AE32EA1210AD3520 /* ZoomInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1517F835F8E6531CD62C1AB9 /* ZoomInfo.swift */; };
 		3EC17004A27AD6C8935A519E /* NTInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0FCA6EA81A3E03ED5166592 /* NTInfoView.swift */; };
@@ -67,6 +66,7 @@
 		E526153216CF337C89AD16B8 /* FileTypeColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C3BB9BCC1F32AEEE06510E /* FileTypeColors.swift */; };
 		220F3DF24BC7FF1245CB830C /* GlowSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6456AF5339858A36F07652D8 /* GlowSelection.swift */; };
 		3B9E7A1C5D4F2860A1C8E5D7 /* FileIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2F6B0A9C7E4513F2A6B8D1 /* FileIcons.swift */; };
+		5B8D2F4A6C1E3079D4B6A8C2 /* HelpWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E1A3B5D7F2408E6A8C0D2F /* HelpWindowController.swift */; };
 		2D7F9B1E3A5C4086B9D1F3A5 /* InfoCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4C6E8B0D2F41397C5E7A9B1 /* InfoCardView.swift */; };
 		E27C9A4D1B6F3058C9A2D4E7 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A9D1C7E3B5F2086D1E8A3C5 /* SidebarView.swift */; };
 		C4A7D1E9B3F85260D7E1A9C3 /* FileOutlineCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F8B3D5E7A9C2064B8D3F5A7 /* FileOutlineCells.swift */; };
@@ -156,6 +156,7 @@
 		85C3BB9BCC1F32AEEE06510E /* FileTypeColors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileTypeColors.swift; sourceTree = "<group>"; };
 		6456AF5339858A36F07652D8 /* GlowSelection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlowSelection.swift; sourceTree = "<group>"; };
 		8D2F6B0A9C7E4513F2A6B8D1 /* FileIcons.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileIcons.swift; sourceTree = "<group>"; };
+		C9E1A3B5D7F2408E6A8C0D2F /* HelpWindowController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelpWindowController.swift; sourceTree = "<group>"; };
 		A4C6E8B0D2F41397C5E7A9B1 /* InfoCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InfoCardView.swift; sourceTree = "<group>"; };
 		4A9D1C7E3B5F2086D1E8A3C5 /* SidebarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		1F8B3D5E7A9C2064B8D3F5A7 /* FileOutlineCells.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileOutlineCells.swift; sourceTree = "<group>"; };
@@ -171,7 +172,6 @@
 		AE0BEFAB459530C837B06E47 /* ImageAndTextCell.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImageAndTextCell.swift; sourceTree = "<group>"; };
 		B0742A9C51D4948DC4C86237 /* NSFileManager-Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NSFileManager-Extensions.swift"; sourceTree = "<group>"; };
 		B21D131B49A37B5309A5771C /* FileSizeFormatter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileSizeFormatter.swift; sourceTree = "<group>"; };
-		B4D04A8E391BDE18CE106866 /* AppController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppController.swift; sourceTree = "<group>"; };
 		B97F105B53A3491AE4483C08 /* FileKindsPopupController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileKindsPopupController.swift; sourceTree = "<group>"; };
 		B98211A1FD8A62BADAEA05E2 /* NSURL-Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NSURL-Extensions.swift"; sourceTree = "<group>"; };
 		BB4E73D84F9A5A5072F5FCF9 /* FSItemSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FSItemSupport.swift; sourceTree = "<group>"; };
@@ -359,6 +359,7 @@
 				85C3BB9BCC1F32AEEE06510E /* FileTypeColors.swift */,
 				6456AF5339858A36F07652D8 /* GlowSelection.swift */,
 				8D2F6B0A9C7E4513F2A6B8D1 /* FileIcons.swift */,
+				C9E1A3B5D7F2408E6A8C0D2F /* HelpWindowController.swift */,
 				A4C6E8B0D2F41397C5E7A9B1 /* InfoCardView.swift */,
 				4A9D1C7E3B5F2086D1E8A3C5 /* SidebarView.swift */,
 				1F8B3D5E7A9C2064B8D3F5A7 /* FileOutlineCells.swift */,
@@ -553,7 +554,6 @@
 		FCCFB2F0097FA42B009EA2B6 /* Main Classes */ = {
 			isa = PBXGroup;
 			children = (
-				B4D04A8E391BDE18CE106866 /* AppController.swift */,
 				060080DADA4A2E1545B0F157 /* LoadingPanelController.swift */,
 				3183A3D59C082978B3EAD150 /* MainWindow.swift */,
 				75FD0D13F8068F8EB2360C71 /* MainWindowController.swift */,
@@ -748,6 +748,7 @@
 				E526153216CF337C89AD16B8 /* FileTypeColors.swift in Sources */,
 				220F3DF24BC7FF1245CB830C /* GlowSelection.swift in Sources */,
 				3B9E7A1C5D4F2860A1C8E5D7 /* FileIcons.swift in Sources */,
+				5B8D2F4A6C1E3079D4B6A8C2 /* HelpWindowController.swift in Sources */,
 				2D7F9B1E3A5C4086B9D1F3A5 /* InfoCardView.swift in Sources */,
 				E27C9A4D1B6F3058C9A2D4E7 /* SidebarView.swift in Sources */,
 				C4A7D1E9B3F85260D7E1A9C3 /* FileOutlineCells.swift in Sources */,
@@ -765,7 +766,6 @@
 				2F7248AEC391F0624AFFF0E2 /* NSFileManager-Extensions.swift in Sources */,
 				D31AF347303A246F0FA1A2E5 /* DIXOutlineView.swift in Sources */,
 				237881429E928C4A362DB427 /* DIXTableView.swift in Sources */,
-				2F9542B010981D00ED77CFA3 /* AppController.swift in Sources */,
 				1658101C80FB6359C8EC6C16 /* ImageAndTextCell.swift in Sources */,
 				ECCF632941A84FF02122D749 /* LoadingPanelController.swift in Sources */,
 				CB437D808F106E82C21A1231 /* DrivesPanelController.swift in Sources */,
@@ -983,7 +983,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2.0.0;
+				CURRENT_PROJECT_VERSION = 2.1.0;
 				DEVELOPMENT_TEAM = 65J464P6J4;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_TESTABILITY = YES;
@@ -995,7 +995,7 @@
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 2.0.0;
+				MARKETING_VERSION = 2.1.0;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.derlien.DiskInventoryX;
 				PRODUCT_NAME = "Disk Inventory Xs";
@@ -1018,7 +1018,7 @@
 				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2.0.0;
+				CURRENT_PROJECT_VERSION = 2.1.0;
 				DEVELOPMENT_TEAM = V29E8BPY35;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1030,7 +1030,7 @@
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 2.0.0;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.derlien.DiskInventoryX;
 				PRODUCT_NAME = "Disk Inventory Xs";
 				PROVISIONING_PROFILE_SPECIFIER = "";
