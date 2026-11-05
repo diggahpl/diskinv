@@ -228,3 +228,68 @@ final class FlatHeaderView: NSTableHeaderView {
         image.draw(in: NSRect(x: x, y: rect.midY - size.height / 2, width: size.width, height: size.height))
     }
 }
+
+// MARK: - Cell-based tables (kinds, selection list)
+
+/// A text cell with a thin bar under the text, like the size cell of the outline. The
+/// bar is kept in plain numbers, as NSCell's copy of its storage keeps those but would
+/// lose a Swift object (see ImageAndTextCell.copy).
+final class ShareBarCell: NSTextFieldCell {
+
+    private var share: CGFloat = 0
+    private var red: CGFloat = 1, green: CGFloat = 1, blue: CGFloat = 1, alpha: CGFloat = 0.5
+
+    /// `share` is 0...1; the bar shows in `color`.
+    func setBar(share: CGFloat, color: NSColor) {
+        self.share = max(0, min(share, 1))
+        let rgb = color.usingColorSpace(.sRGB) ?? color
+        red = rgb.redComponent; green = rgb.greenComponent; blue = rgb.blueComponent; alpha = rgb.alphaComponent
+    }
+
+    override func draw(withFrame cellFrame: NSRect, in controlView: NSView) {
+        super.draw(withFrame: cellFrame, in: controlView)
+        guard share > 0 else { return }
+
+        let track = NSRect(x: cellFrame.minX + 3, y: cellFrame.maxY - 4, width: max(cellFrame.width - 8, 0), height: 2)
+        NSColor(white: 1, alpha: 0.07).setFill()
+        NSBezierPath(roundedRect: track, xRadius: 1, yRadius: 1).fill()
+
+        let lit = NSRect(x: track.minX, y: track.minY, width: max(track.width * share, 2), height: track.height)
+        NSColor(srgbRed: red, green: green, blue: blue, alpha: alpha).setFill()
+        NSBezierPath(roundedRect: lit, xRadius: 1, yRadius: 1).fill()
+    }
+}
+
+enum TableColumns {
+
+    /// Gives a table's columns the room it has: the color swatch and the numbers keep a
+    /// width that fits them, the text columns share the rest. The nib's widths were made
+    /// for another panel, and clipped "Mach-O dynamic libra" and "648,9 ME" in it.
+    static func fit(_ table: NSTableView) {
+        guard let scrollView = table.enclosingScrollView, table.tableColumns.count > 1 else { return }
+
+        table.columnAutoresizingStyle = .noColumnAutoresizing
+        let columns = table.tableColumns
+        var fixedWidth: CGFloat = 0
+        var flexible: [NSTableColumn] = []
+
+        for column in columns {
+            let id = column.identifier.rawValue
+            if id == "color" {
+                column.width = 40
+            } else if column.headerCell.alignment == .right {
+                column.width = id == "fileCount" ? 62 : 82
+            } else {
+                flexible.append(column)
+                continue
+            }
+            fixedWidth += column.width
+        }
+
+        let room = scrollView.contentSize.width - fixedWidth - table.intercellSpacing.width * CGFloat(columns.count) - 8
+        let each = max(room / CGFloat(max(flexible.count, 1)), 70)
+        for column in flexible {
+            column.width = each
+        }
+    }
+}

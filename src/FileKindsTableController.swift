@@ -23,6 +23,7 @@ class FileKindsTableController: NSObject {
     @IBOutlet private var _kindsTableArrayController: NSArrayController!
 
     private var _cushionImages: [String: NSImage] = [:]
+    private var _largestKindSize: UInt64?
 
     private static var smallFontContext = 0
     private static var shareKindColorsContext = 0
@@ -43,6 +44,14 @@ class FileKindsTableController: NSObject {
                          options: [], context: &Self.shareKindColorsContext)
 
         _kindsTableArrayController.addObserver(self, forKeyPath: "arrangedObjects", options: [], context: nil)
+
+        // the kind's name with a bar for its share, in place of the nib's plain text cell
+        if let kindColumn = _tableView.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier("kindName")) {
+            let cell = ShareBarCell(textCell: "")
+            cell.lineBreakMode = .byTruncatingTail
+            cell.truncatesLastVisibleLine = true
+            kindColumn.dataCell = cell
+        }
 
         setTableViewFont()
 
@@ -78,7 +87,28 @@ class FileKindsTableController: NSObject {
             // the "color" column's data cell is an image cell; set via KVC since
             // NSCell's -setImage: isn't exposed uniformly to Swift
             (cell as? NSCell)?.setValue(image, forKey: "image")
+        } else if tableColumn?.identifier.rawValue == "kindName", let cell = cell as? ShareBarCell,
+                  let statistic = kindStatistic(atRow: row) {
+            let share = largestKindSize > 0 ? CGFloat(statistic.size) / CGFloat(largestKindSize) : 0
+            let colors = document()?.fileTypeColors()
+            let hasColor = colors?.hasPaletteColor(forKind: statistic.kindName) ?? false
+            let barColor = hasColor ? Theme.cushionDisplayColor(colors!.color(forKind: statistic.kindName))
+                                    : NSColor(white: 1, alpha: 0.30)
+            cell.setBar(share: share, color: barColor)
         }
+    }
+
+    private func kindStatistic(atRow row: Int) -> FileKindStatistic? {
+        (_kindsTableArrayController.arrangedObjects as? [Any])?[row] as? FileKindStatistic
+    }
+
+    // the biggest kind, which a full bar stands for
+    private var largestKindSize: UInt64 {
+        if let cached = _largestKindSize { return cached }
+        let kinds = (_kindsTableArrayController.arrangedObjects as? [Any]) ?? []
+        let largest = kinds.compactMap { ($0 as? FileKindStatistic)?.size }.max() ?? 0
+        _largestKindSize = largest
+        return largest
     }
 
     func tableViewSelectionDidChange(_ notification: Notification) {
@@ -95,6 +125,7 @@ class FileKindsTableController: NSObject {
             _tableView.needsDisplay = true
         } else if object as AnyObject === _kindsTableArrayController, keyPath == "arrangedObjects" {
             _cushionImages.removeAll()
+            _largestKindSize = nil
         }
     }
 
@@ -110,11 +141,25 @@ class FileKindsTableController: NSObject {
 
         var image = _cushionImages[kindStatistic.kindName]
         if image == nil || image!.size != cellSize {
-            let kindColor = document()?.fileTypeColors().color(forKind: kindStatistic.kindName) ?? .black
-            image = Self.chip(color: Theme.cushionDisplayColor(kindColor), size: cellSize)
+            let colors = document()?.fileTypeColors()
+            let kindColor = colors?.color(forKind: kindStatistic.kindName) ?? .black
+            // kinds past the palette share dim greys that tell nothing apart: a hollow chip
+            let hasColor = colors?.hasPaletteColor(forKind: kindStatistic.kindName) ?? false
+            image = hasColor ? Self.chip(color: Theme.cushionDisplayColor(kindColor), size: cellSize)
+                             : Self.hollowChip(size: cellSize)
             _cushionImages[kindStatistic.kindName] = image
         }
         return image
+    }
+
+    // kinds past the palette have no color of their own: a small dim dot, not a button
+    private static func hollowChip(size: NSSize) -> NSImage {
+        NSImage(size: size, flipped: false) { rect in
+            let dot = NSRect(x: rect.midX - 3, y: rect.midY - 3, width: 6, height: 6)
+            NSColor(white: 1, alpha: 0.28).setFill()
+            NSBezierPath(ovalIn: dot).fill()
+            return true
+        }
     }
 
     private static func chip(color: NSColor, size: NSSize) -> NSImage {
@@ -137,6 +182,14 @@ class FileKindsTableController: NSObject {
             : NSFont.systemFontSize
         _tableView.font = NSFont.systemFont(ofSize: fontSize)
         _tableView.rowHeight = (fontSize * 1.7).rounded()
+
+        for id in ["size", "fileCount"] {
+            let cell = _tableView.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier(id))?.dataCell as? NSTextFieldCell
+            cell?.font = Theme.numericFont(ofSize: fontSize)
+            cell?.textColor = id == "size" ? .labelColor : .secondaryLabelColor
+        }
+        (_tableView.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier("kindName"))?.dataCell as? NSTextFieldCell)?
+            .font = NSFont.systemFont(ofSize: fontSize)
     }
 
     @objc private func documentSelectionChanged(_ notification: Notification) {

@@ -78,7 +78,7 @@ class MainWindowController: OAToolbarWindowControllerEx {
         sizeFreshWindow()
         installSidebar()
         applyChrome()
-        showSidebar(.kinds)
+        restoreSidebar()
     }
 
     // The nib's window is sized for a drawer layout. A window that has no saved frame gets
@@ -111,9 +111,29 @@ class MainWindowController: OAToolbarWindowControllerEx {
 
         _sidebar.install(kinds: kinds, selection: selection)
         _sidebar.autoresizingMask = [.minXMargin, .height]
-        _sidebar.onPaneChange = { [weak self] _ in self.map { NotificationCenter.default.post(name: Self.sidebarDidChangeNotification, object: $0) } }
+        _sidebar.onPaneChange = { [weak self] _ in
+            guard let self = self else { return }
+            self.rememberSidebar()
+            NotificationCenter.default.post(name: Self.sidebarDidChangeNotification, object: self)
+        }
         _sidebar.isHidden = true
         contentView.addSubview(_sidebar)
+    }
+
+    // what the sidebar showed when the last window was used: a tab, or nothing (-1); the
+    // kinds tab on first launch
+    private static let sidebarStateKey = "SidebarPane"
+
+    private func restoreSidebar() {
+        let stored = UserDefaults.standard.object(forKey: Self.sidebarStateKey) as? Int
+        if let stored = stored, SidebarView.Pane(rawValue: stored) == nil {
+            return      // -1: hidden
+        }
+        showSidebar(stored.flatMap { SidebarView.Pane(rawValue: $0) } ?? .kinds)
+    }
+
+    private func rememberSidebar() {
+        UserDefaults.standard.set(_sidebarShown ? _sidebar.selectedPane.rawValue : -1, forKey: Self.sidebarStateKey)
     }
 
     func isSidebarShowing(_ pane: SidebarView.Pane) -> Bool {
@@ -126,6 +146,7 @@ class MainWindowController: OAToolbarWindowControllerEx {
         _sidebarShown = true
         _sidebar.isHidden = false
         layoutPanels()
+        rememberSidebar()
         NotificationCenter.default.post(name: Self.sidebarDidChangeNotification, object: self)
     }
 
@@ -133,6 +154,7 @@ class MainWindowController: OAToolbarWindowControllerEx {
         _sidebarShown = false
         _sidebar.isHidden = true
         layoutPanels()
+        rememberSidebar()
         NotificationCenter.default.post(name: Self.sidebarDidChangeNotification, object: self)
     }
 

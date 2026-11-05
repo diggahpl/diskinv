@@ -121,6 +121,16 @@ class SelectionListTableController: NSObject {
             : NSFont.systemFontSize
         _tableView.font = NSFont.systemFont(ofSize: fontSize)
         _tableView.rowHeight = (fontSize * 1.7).rounded()
+
+        // sizes in width-stable digits; the path loses its head when it is too long, as the
+        // end of a path says more than its start, and is a step quieter than the name
+        (_tableView.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier("size"))?.dataCell as? NSTextFieldCell)?
+            .font = Theme.numericFont(ofSize: fontSize)
+        if let pathCell = _tableView.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier("displayPath"))?
+            .dataCell as? NSTextFieldCell {
+            pathCell.lineBreakMode = .byTruncatingHead
+            pathCell.textColor = .secondaryLabelColor
+        }
     }
 
     private func onDocumentSelectionChanged() {

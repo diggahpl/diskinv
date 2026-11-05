@@ -65,6 +65,21 @@ final class ThemeTests: XCTestCase {
         XCTAssertTrue(dim.allSatisfy { $0 > 0 && $0 < 1 })
     }
 
+    func testOnlyTheFirstKindsGetPaletteColors() {
+        let colors = FileTypeColors()
+        let palette = FileTypeColors.paletteHex.count
+        for index in 0..<(palette + 3) {
+            _ = colors.color(forKind: "kind \(index)")
+        }
+        for index in 0..<palette {
+            XCTAssertTrue(colors.hasPaletteColor(forKind: "kind \(index)"), "kind \(index)")
+        }
+        for index in palette..<(palette + 3) {
+            XCTAssertFalse(colors.hasPaletteColor(forKind: "kind \(index)"), "kind \(index) shares the dim greys")
+        }
+        XCTAssertFalse(colors.hasPaletteColor(forKind: "never asked for"))
+    }
+
     func testToolbarSymbolsAllExist() throws {
         let path = try XCTUnwrap(Bundle(for: FileTypeColors.self).path(forResource: "MainWindowToolbar", ofType: "toolbar"))
         let config = try XCTUnwrap(NSDictionary(contentsOfFile: path) as? [String: Any])

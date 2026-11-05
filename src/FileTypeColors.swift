@@ -41,6 +41,7 @@ final class FileTypeColors: NSObject {
     ]
 
     private var colors: [String: NSColor] = [:]
+    private var paletteKinds: Set<String> = []
     private let predefinedColors: [NSColor]
 
     override init() {
@@ -62,6 +63,14 @@ final class FileTypeColors: NSObject {
 
     @objc func reset() {
         colors.removeAll()
+        paletteKinds.removeAll()
+    }
+
+    /// Whether the kind got one of the palette's neon colors (the rest share dim greys,
+    /// which do not tell kinds apart).
+    @objc(hasPaletteColorForKind:)
+    func hasPaletteColor(forKind kind: String) -> Bool {
+        paletteKinds.contains(kind)
     }
 
     @objc(colorForItem:)
@@ -78,6 +87,7 @@ final class FileTypeColors: NSObject {
         let color: NSColor
         if predefinedColors.count > colors.count {
             color = predefinedColors[colors.count]
+            paletteKinds.insert(kind)
         } else {
             // "dim matter": slate greys, deliberately not normalized so they stay
             // darker than the neon kinds, and a little lighter with every kind

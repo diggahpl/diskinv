@@ -276,10 +276,13 @@ class NTTitledInfoView: NSView {
 
     private static let _infoLineColor: NSColor = NSColor(white: 1, alpha: 0.07)
 
+    // the tint behind the titles ends with the last row
     private func drawBackgroundShadow() {
+        guard let lastRow = _infoViews.last else { return }
         var viewRect = bounds
 
         viewRect.size.width = _backgroundShadowOffset
+        viewRect.size.height = min(bounds.height, lastRow.frame.maxY + _verticalOffset)
 
         titleShadowColor().set()
         NSBezierPath.fill(viewRect)

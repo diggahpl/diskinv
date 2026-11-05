@@ -25,9 +25,9 @@ final class SidebarView: NSView {
         }
     }
 
-    /// 330 points, less in a narrow window so the outline and the map keep their room.
+    /// 360 points, less in a narrow window so the outline and the map keep their room.
     static func width(forContentWidth contentWidth: CGFloat) -> CGFloat {
-        min(330, max(220, (contentWidth * 0.28).rounded()))
+        min(360, max(220, (contentWidth * 0.28).rounded()))
     }
 
     private let tabs = NSSegmentedControl()
@@ -99,7 +99,7 @@ final class SidebarView: NSView {
     // the nib's column widths were made for a drawer of another width
     private func fitColumns(in view: NSView) {
         if let table = view as? NSTableView {
-            table.sizeToFit()
+            TableColumns.fit(table)
         } else {
             view.subviews.forEach(fitColumns)
         }
