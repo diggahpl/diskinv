@@ -23,13 +23,14 @@ final class TreeMapLabelsTests: XCTestCase {
         return bitmap
     }
 
-    private func labels(source: NSObject, grey: UInt8 = 60) throws -> [TreeMapLabel] {
+    private func labels(source: NSObject, grey: UInt8 = 60,
+                        isDimmed: @escaping (Any) -> Bool = { _ in false }) throws -> [TreeMapLabel] {
         let view = TreeMapView(frame: NSRect(origin: .zero, size: Self.size))
         let root = TMVItem(dataSource: source, delegate: nil, renderedItem: nil, treeMapView: view)
         root.calcLayout(NSRect(origin: .zero, size: Self.size))
         return TreeMapLabels.collect(root: root, view: view, bitmap: try greyBitmap(grey),
                                      name: { "item \(($0 as? NSNumber)?.intValue ?? -1)" },
-                                     size: { "\($0) bytes" })
+                                     size: { "\($0) bytes" }, isDimmed: isDimmed)
     }
 
     func testBigFilesAreNamedAndSmallCellsAreNot() throws {
@@ -52,6 +53,16 @@ final class TreeMapLabelsTests: XCTestCase {
         for folder in folders {
             XCTAssertNil(folder.detail)
         }
+    }
+
+    func testLeavesOutOfFocusAreNotNamed() throws {
+        let source = FlatDataSource(weights: [9000, 6000])
+        let all = try labels(source: source)
+        XCTAssertEqual(all.map(\.name).sorted(), ["item 0", "item 1"])
+
+        // only item 1 is in focus
+        let focused = try labels(source: source, isDimmed: { ($0 as? NSNumber)?.intValue != 1 })
+        XCTAssertEqual(focused.map(\.name), ["item 1"])
     }
 
     func testInkFollowsTheLightnessOfTheCell() throws {

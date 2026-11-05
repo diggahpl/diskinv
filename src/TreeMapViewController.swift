@@ -16,6 +16,13 @@
 
 import Cocoa
 
+/// Focus on one file kind: the legend posts it when the user picks a kind, the map dims
+/// everything else. `userInfo[kindKey]` is the kind's name, or missing to clear the focus.
+enum KindFocus {
+    static let changedNotification = Notification.Name("KindFocusChanged")
+    static let kindKey = "kind"
+}
+
 @objc(TreeMapViewController)
 class TreeMapViewController: NSObject {
 
@@ -29,6 +36,7 @@ class TreeMapViewController: NSObject {
 
     private var _statusBar: StatusBarView?
     private var _touchedItem: FSItem?
+    private var _focusedKind: String?
 
     private static var shareKindColorsContext = 0
 
@@ -44,6 +52,13 @@ class TreeMapViewController: NSObject {
                            name: NSNotification.Name.FSItemsChanged, object: doc)
         center.addObserver(self, selector: #selector(windowWillClose(_:)),
                            name: NSWindow.willCloseNotification, object: _treeMapView?.window)
+        center.addObserver(self, selector: #selector(kindFocusChanged(_:)),
+                           name: KindFocus.changedNotification, object: doc)
+
+        // the pill over the map clears the focus (the legend follows the notification)
+        _treeMapView?.onBadgeClick = { [weak self] in
+            NotificationCenter.default.post(name: KindFocus.changedNotification, object: self?.document())
+        }
 
         _fileNameTextField?.stringValue = ""
         _fileSizeTextField?.stringValue = ""
@@ -133,7 +148,11 @@ class TreeMapViewController: NSObject {
         var color: NSColor?
         let type = fsItem?.type()
         if type == FileFolderItem {
-            color = fsItem.flatMap { document()?.fileTypeColors().color(forItem: $0) }
+            if let focused = _focusedKind, fsItem?.kindName() != focused {
+                color = Theme.dimmedKind
+            } else {
+                color = fsItem.flatMap { document()?.fileTypeColors().color(forItem: $0) }
+            }
         } else if type == FreeSpaceItem {
             color = Theme.freeSpace
         } else if type == OtherSpaceItem {
@@ -141,6 +160,39 @@ class TreeMapViewController: NSObject {
         }
 
         renderer.setCushionColor(color)
+    }
+
+    // MARK: - kind focus
+
+    @objc private func kindFocusChanged(_ notification: Notification) {
+        _focusedKind = notification.userInfo?[KindFocus.kindKey] as? String
+        applyKindFocus()
+    }
+
+    // The kind's cells keep their colors, all others turn dark slate and lose their names; a
+    // pill over the map names the kind and clears the focus.
+    private func applyKindFocus() {
+        if let kind = _focusedKind {
+            _treeMapView.isItemDimmed = { item in
+                guard let fsItem = item as? FSItem else { return false }
+                return fsItem.isSpecialItem() || fsItem.kindName() != kind
+            }
+
+            let colors = document()?.fileTypeColors()
+            let hasColor = colors?.hasPaletteColor(forKind: kind) ?? false
+            let color = hasColor ? Theme.cushionDisplayColor(colors!.color(forKind: kind)) : NSColor(white: 1, alpha: 0.4)
+            var text = kind
+            if let statistic = document()?.kindStatistic(forKind: kind) {
+                text += "  \(FileSizeFormatter().string(for: NSNumber(value: statistic.size)) ?? "")"
+            }
+            _treeMapView.focusBadge = TreeMapBadge(text: text, color: color)
+        } else {
+            _treeMapView.isItemDimmed = nil
+            _treeMapView.focusBadge = nil
+        }
+
+        _treeMapView.invalidateCanvasCache()
+        _treeMapView.needsDisplay = true
     }
 
     @objc(treeMapView:willShowMenuForEvent:)

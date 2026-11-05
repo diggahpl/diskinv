@@ -58,6 +58,12 @@ let TMVTouchedItem = "TreeMapViewTouchedItem"
     @objc optional func treeMapViewItemTouched(_ notification: Notification)
 }
 
+/// What the map is focused on, for the pill at its upper right.
+struct TreeMapBadge {
+    let text: String
+    let color: NSColor
+}
+
 @objc(TreeMapView)
 final class TreeMapView: NSView, NSViewToolTipOwner {
 
@@ -68,6 +74,16 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
     private var _touchedRenderer: TMVItem?
     private var _cachedContent: NSBitmapImageRep?
     private var _labels: [TreeMapLabel] = []
+
+    /// A pill at the upper right of the map that says what the map is focused on; clicking
+    /// it calls `onBadgeClick`.
+    var focusBadge: TreeMapBadge? {
+        didSet { needsDisplay = true }
+    }
+    var onBadgeClick: (() -> Void)?
+    /// Leaves for which this says true are out of focus: they get no name.
+    var isItemDimmed: ((Any) -> Bool)?
+    private var _badgeRect: NSRect = .zero
     private var _zoomer: ZoomInfo?        // non-nil while zooming; doubles as the "are we zooming" flag
 
     // The IBOutlet delegate/dataSource stay untyped (id/Any?) with the bare names
@@ -246,6 +262,7 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
             }
 
             TreeMapLabels.draw(_labels, in: rect)
+            drawFocusBadge()
 
             if let touchedRenderer = _touchedRenderer, touchedRenderer !== _selectedRenderer {
                 TreeMapGlow.drawHover(in: itemRect(byCellId: touchedRenderer))
@@ -268,6 +285,11 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
     }
 
     override func mouseDown(with theEvent: NSEvent) {
+        if focusBadge != nil, _badgeRect.contains(convert(theEvent.locationInWindow, from: nil)) {
+            onBadgeClick?()
+            return
+        }
+
         var point = theEvent.locationInWindow
         point = convert(point, from: nil)
         point.y -= 1
@@ -678,7 +700,45 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
                                             guard let self = self else { return nil }
                                             return self.delegateProto?.treeMapView?(self, getToolTipByItem: item) ?? nil
                                         },
-                                        size: { sizeFormatter.string(for: NSNumber(value: $0)) ?? "" })
+                                        size: { sizeFormatter.string(for: NSNumber(value: $0)) ?? "" },
+                                        isDimmed: { [weak self] item in self?.isItemDimmed?(item) ?? false })
+    }
+
+    // the focus pill: a dot in the kind's color, its name and size, and a cross to clear it
+    private func drawFocusBadge() {
+        guard let badge = focusBadge else {
+            _badgeRect = .zero
+            return
+        }
+
+        let font = NSFont.systemFont(ofSize: 11, weight: .semibold)
+        let textWidth = ceil((badge.text as NSString).size(withAttributes: [.font: font]).width)
+        let width = min(14 + 10 + 8 + textWidth + 10 + 10 + 12, max(bounds.width - 24, 60))
+        let pill = NSRect(x: bounds.maxX - width - 12, y: bounds.minY + 12, width: width, height: 26)
+        _badgeRect = pill
+
+        let path = NSBezierPath(roundedRect: pill, xRadius: 13, yRadius: 13)
+        Theme.space.withAlphaComponent(Theme.reduceTransparency ? 1 : 0.86).setFill()
+        path.fill()
+        NSColor(white: 1, alpha: 0.2).setStroke()
+        path.lineWidth = 1
+        path.stroke()
+
+        badge.color.setFill()
+        NSBezierPath(ovalIn: NSRect(x: pill.minX + 12, y: pill.midY - 5, width: 10, height: 10)).fill()
+
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.lineBreakMode = .byTruncatingTail
+        (badge.text as NSString).draw(in: NSRect(x: pill.minX + 30, y: pill.midY - 7, width: pill.width - 30 - 28, height: 15),
+                                      withAttributes: [.font: font, .foregroundColor: NSColor(white: 1, alpha: 0.95),
+                                                       .paragraphStyle: paragraph])
+
+        let configuration = NSImage.SymbolConfiguration(pointSize: 9, weight: .bold)
+            .applying(NSImage.SymbolConfiguration(paletteColors: [NSColor(white: 1, alpha: 0.7)]))
+        if let cross = NSImage(systemSymbolName: "xmark", accessibilityDescription: nil)?.withSymbolConfiguration(configuration) {
+            cross.draw(in: NSRect(x: pill.maxX - 22, y: pill.midY - cross.size.height / 2,
+                                  width: cross.size.width, height: cross.size.height))
+        }
     }
 
     private func allocContentCache() {

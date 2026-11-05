@@ -24,6 +24,9 @@ class FileKindsTableController: NSObject {
 
     private var _cushionImages: [String: NSImage] = [:]
     private var _largestKindSize: UInt64?
+    private var _focusedKind: String?
+    // set while the table follows the document's selection, which is not the user's pick
+    private var _followingDocument = false
 
     private static var smallFontContext = 0
     private static var shareKindColorsContext = 0
@@ -44,6 +47,7 @@ class FileKindsTableController: NSObject {
                          options: [], context: &Self.shareKindColorsContext)
 
         _kindsTableArrayController.addObserver(self, forKeyPath: "arrangedObjects", options: [], context: nil)
+        center.addObserver(self, selector: #selector(kindFocusChanged(_:)), name: KindFocus.changedNotification, object: doc)
 
         // the kind's name with a bar for its share, in place of the nib's plain text cell
         if let kindColumn = _tableView.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier("kindName")) {
@@ -111,7 +115,26 @@ class FileKindsTableController: NSObject {
         return largest
     }
 
+    // Picking a kind in the legend focuses the map on it; the table following the selected
+    // item of the document, or letting go of its row, does not.
+    @objc(tableViewSelectionDidChange:)
     func tableViewSelectionDidChange(_ notification: Notification) {
+        guard !_followingDocument else { return }
+
+        let row = _tableView.selectedRow
+        let kind = row >= 0 ? kindStatistic(atRow: row)?.kindName : nil
+        let userInfo: [AnyHashable: Any] = kind.map { [KindFocus.kindKey: $0] } ?? [:]
+        NotificationCenter.default.post(name: KindFocus.changedNotification, object: document(), userInfo: userInfo)
+    }
+
+    @objc private func kindFocusChanged(_ notification: Notification) {
+        _focusedKind = notification.userInfo?[KindFocus.kindKey] as? String
+        // cleared from elsewhere (the pill over the map): the legend lets go of its row
+        if _focusedKind == nil, _tableView.selectedRow >= 0 {
+            _followingDocument = true
+            _kindsTableArrayController.setSelectionIndexes(IndexSet())
+            _followingDocument = false
+        }
     }
 
     // MARK: - KVO
@@ -193,7 +216,8 @@ class FileKindsTableController: NSObject {
     }
 
     @objc private func documentSelectionChanged(_ notification: Notification) {
-        guard let doc = document() else { return }
+        // with a focus the legend keeps showing the focused kind, not the selected item's
+        guard let doc = document(), _focusedKind == nil else { return }
 
         // optimization: a folder isn't in the kinds list, so clear the selection
         let item = doc.selectedItem()
@@ -210,6 +234,8 @@ class FileKindsTableController: NSObject {
         }
 
         if (stat as AnyObject?) !== (tableViewSelection as AnyObject?) {
+            _followingDocument = true
+            defer { _followingDocument = false }
             if let stat = stat {
                 _kindsTableArrayController.setSelectedObjects([stat])
             } else {

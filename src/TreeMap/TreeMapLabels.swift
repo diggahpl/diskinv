@@ -29,9 +29,10 @@ enum TreeMapLabels {
     private static let maximumFolderDepth = 3
 
     /// The labels of the cells below `root`. `bitmap` is the rendered cache (its pixels
-    /// decide between light and dark ink), `name` and `size` ask the data source.
+    /// decide between light and dark ink), `name` and `size` ask the data source, and leaves that are `isDimmed` (out of focus) stay unnamed.
     static func collect(root: TMVItem, view: TreeMapView, bitmap: NSBitmapImageRep,
-                        name: (Any) -> String?, size: (UInt64) -> String) -> [TreeMapLabel] {
+                        name: (Any) -> String?, size: (UInt64) -> String,
+                        isDimmed: (Any) -> Bool = { _ in false }) -> [TreeMapLabel] {
         guard let pixels = bitmap.bitmapData else { return [] }
 
         var labels: [TreeMapLabel] = []
@@ -49,7 +50,7 @@ enum TreeMapLabels {
             if rect.width < minimumLeafSize.width || rect.height < minimumLeafSize.height { return }
 
             if item.isLeaf() {
-                guard let object = item.item(), let text = name(object) else { return }
+                guard let object = item.item(), !isDimmed(object), let text = name(object) else { return }
                 // a label under a folder's pill would be a mess
                 let textRect = rect.insetBy(dx: 8, dy: 4)
                 if pills.contains(where: { $0.intersects(textRect) }) { return }

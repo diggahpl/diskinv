@@ -26,6 +26,9 @@ enum Theme {
     static let hairline = NSColor(white: 1, alpha: 0.10)
     /// Free disk space: an empty, dim blue void rather than a bright patch.
     static let freeSpace = NSColor(srgbRed: 0.10, green: 0.14, blue: 0.24, alpha: 1)
+    /// What the cushions of kinds out of focus are colored with: dark slate, so the focused
+    /// kind is the only thing that shines.
+    static let dimmedKind = NSColor(srgbRed: 0.22, green: 0.24, blue: 0.29, alpha: 1)
     /// Space used by things outside the scanned folder: a dim violet.
     static let otherSpace = NSColor(srgbRed: 0.20, green: 0.12, blue: 0.30, alpha: 1)
 
