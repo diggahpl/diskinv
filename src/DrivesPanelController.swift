@@ -67,6 +67,18 @@ class DrivesPanelController: NSObject {
             // open the volume on double-click (can't be set in IB)
             _volumesTableView.doubleAction = #selector(openVolume(_:))
 
+            // the deep space of the main window, instead of stock grey stripes
+            _volumesPanel.backgroundColor = Theme.space
+            _volumesPanel.titlebarAppearsTransparent = true
+            _volumesTableView.backgroundColor = Theme.spaceRaised
+            _volumesTableView.usesAlternatingRowBackgroundColors = false
+            _volumesTableView.enclosingScrollView?.drawsBackground = false
+            _volumesTableView.enclosingScrollView?.borderType = .noBorder
+            _volumesTableView.enclosingScrollView?.wantsLayer = true
+            _volumesTableView.enclosingScrollView?.layer?.cornerRadius = 10
+            _volumesTableView.enclosingScrollView?.layer?.cornerCurve = .continuous
+            _volumesTableView.enclosingScrollView?.layer?.masksToBounds = true
+
             let sizeFormatter = FileSizeFormatter()
             (_volumesTableView.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier("totalSize"))?.dataCell as? NSCell)?.formatter = sizeFormatter
             (_volumesTableView.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier("freeBytes"))?.dataCell as? NSCell)?.formatter = sizeFormatter

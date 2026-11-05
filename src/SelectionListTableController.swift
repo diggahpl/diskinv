@@ -23,6 +23,7 @@ class SelectionListTableController: NSObject {
     @IBOutlet private var _kindStatisticsArrayController: FileKindsPopupController!
 
     private static var smallFontContext = 0
+    private var _updatesSuspended = false
 
     @objc func document() -> FileSystemDoc? {
         _windowController?.document as? FileSystemDoc
@@ -31,18 +32,14 @@ class SelectionListTableController: NSObject {
     override func awakeFromNib() {
         let doc = document()
         let center = NotificationCenter.default
-        let drawer = _windowController.selectionListDrawer()
 
-        center.addObserver(self, selector: #selector(onDrawerClosed(_:)),
-                           name: NSDrawer.didCloseNotification, object: drawer)
-        center.addObserver(self, selector: #selector(onDrawerOpened(_:)),
-                           name: NSDrawer.willOpenNotification, object: drawer)
+        center.addObserver(self, selector: #selector(sidebarChanged(_:)),
+                           name: MainWindowController.sidebarDidChangeNotification, object: _windowController)
         center.addObserver(self, selector: #selector(windowWillClose(_:)),
                            name: NSWindow.willCloseNotification, object: _windowController?.window)
 
-        if drawer.state == 0 {  // NSDrawerClosedState
-            _selectionListArrayController.suspendArrangedObjectsUpdates()
-        }
+        // the list is only kept up to date while the sidebar shows it
+        updateSuspension()
 
         NSUserDefaultsController.shared.addObserver(self, forKeyPath: "values." + UseSmallFontInSelectionList,
                                                     options: [], context: &Self.smallFontContext)
@@ -63,13 +60,17 @@ class SelectionListTableController: NSObject {
 
     // MARK: - NSTableView delegate
 
+    // The table is nib-wired to this plain NSObject, which declares no delegate
+    // conformance, so the selector has to be exposed for the icons to appear.
+    @objc(tableView:willDisplayCell:forTableColumn:row:)
     func tableView(_ tableView: NSTableView, willDisplayCell cell: Any,
                    for tableColumn: NSTableColumn?, row: Int) {
         if tableColumn?.identifier.rawValue == "displayName",
            let item = (_selectionListArrayController.arrangedObjects as? [Any])?[row] as? FSItem,
            let cell = cell as? ImageAndTextCell {
-            // default-font row height is 17px, so subtract 1
-            cell.image = item.icon(withSize: UInt32(tableView.rowHeight - 1))
+            let isNode = document()?.itemIsNode(item) ?? item.isFolder()
+            let kindColor = isNode ? nil : document()?.fileTypeColors().color(forItem: item)
+            cell.image = FileIcons.icon(for: item, kindColor: kindColor, size: 16)
         }
     }
 
@@ -119,7 +120,7 @@ class SelectionListTableController: NSObject {
             ? NSFont.smallSystemFontSize
             : NSFont.systemFontSize
         _tableView.font = NSFont.systemFont(ofSize: fontSize)
-        _tableView.rowHeight = fontSize + 4
+        _tableView.rowHeight = (fontSize * 1.7).rounded()
     }
 
     private func onDocumentSelectionChanged() {
@@ -169,12 +170,20 @@ class SelectionListTableController: NSObject {
         }
     }
 
-    @objc private func onDrawerOpened(_ notification: Notification) {
-        _selectionListArrayController.resumeArrangedObjectsUpdates()
+    @objc private func sidebarChanged(_ notification: Notification) {
+        updateSuspension()
     }
 
-    @objc private func onDrawerClosed(_ notification: Notification) {
-        _selectionListArrayController.suspendArrangedObjectsUpdates()
+    // suspend and resume are counted by the array controller, so keep them balanced
+    private func updateSuspension() {
+        let showing = _windowController?.isSidebarShowing(.selection) ?? false
+        if showing && _updatesSuspended {
+            _selectionListArrayController.resumeArrangedObjectsUpdates()
+            _updatesSuspended = false
+        } else if !showing && !_updatesSuspended {
+            _selectionListArrayController.suspendArrangedObjectsUpdates()
+            _updatesSuspended = true
+        }
     }
 
     @objc private func windowWillClose(_ notification: Notification) {

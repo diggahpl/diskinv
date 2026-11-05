@@ -87,7 +87,7 @@ class NTInfoView: NSView {
         scrollView.autoresizingMask = [.width, .height]
         scrollView.borderType = .noBorder
         scrollView.scrollsDynamically = true
-        scrollView.drawsBackground = true
+        scrollView.drawsBackground = false   // the panel's own deep space shows through
 
         // set small scrollbars
         scrollView.verticalScroller?.controlSize = .small

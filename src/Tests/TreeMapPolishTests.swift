@@ -3,8 +3,9 @@
 //  Disk Inventory XTests
 //
 //  Covers the finishing pass of the treemap look: a lit rim on the top and left
-//  edge of every cell, a deep-space gutter on its bottom and right edge, and the
-//  background fill behind cells too small to be shaded.
+//  edge of every cell, a deep-space gutter on its bottom and right edge, the
+//  outline around folders, and the background fill behind cells too small to be
+//  shaded.
 //
 //  GPL v3
 //
@@ -37,6 +38,38 @@ final class FlatDataSource: NSObject {
     @objc func treeMapView(_ view: TreeMapView!, weightByItem item: Any!) -> UInt64 {
         guard let index = (item as? NSNumber)?.intValue else { return weights.reduce(0, +) }
         return weights[index]
+    }
+}
+
+// Two folders below the root, three files in each: 11...13 below folder 1, 21...23 below folder 2.
+final class NestedDataSource: NSObject {
+    private func id(_ item: Any?) -> Int { (item as? NSNumber)?.intValue ?? 0 }
+
+    private func children(of item: Any?) -> [Int] {
+        switch id(item) {
+        case 0: return [1, 2]
+        case 1: return [11, 12, 13]
+        case 2: return [21, 22, 23]
+        default: return []
+        }
+    }
+
+    @objc func treeMapView(_ view: TreeMapView!, child index: UInt, ofItem item: Any!) -> Any! {
+        NSNumber(value: children(of: item)[Int(index)])
+    }
+
+    @objc func treeMapView(_ view: TreeMapView!, isNode item: Any!) -> Bool {
+        id(item) < 10
+    }
+
+    @objc func treeMapView(_ view: TreeMapView!, numberOfChildrenOfItem item: Any!) -> UInt32 {
+        UInt32(children(of: item).count)
+    }
+
+    @objc func treeMapView(_ view: TreeMapView!, weightByItem item: Any!) -> UInt64 {
+        let kids = children(of: item)
+        if kids.isEmpty { return UInt64(100 * (id(item) % 10)) }
+        return kids.reduce(0) { $0 + UInt64(100 * ($1 % 10)) }
     }
 }
 
@@ -107,11 +140,11 @@ final class TreeMapPolishTests: XCTestCase {
         let bitmap = try greyBitmap(size)
         TreeMapPolish.polish(bitmap, root: root, edge: 1)
 
-        // grey stays grey under the grading curve, so a cell interior shows what an
-        // untouched pixel turns into
+        // grey stays grey under the grading curve, and the middle of a cell is where its
+        // sheen is neutral, so that pixel shows what an untouched one turns into
         let big = leaves(root)[0].rect()
-        let probeX = Int(big.minX + big.width * 0.75)
-        let probeY = Int(big.minY + big.height * 0.75)
+        let probeX = Int(big.midX)
+        let probeY = Int(big.midY)
         let untouched = red(bitmap, probeX, probeY)
 
         var specks: [NSRect] = []
@@ -129,6 +162,22 @@ final class TreeMapPolishTests: XCTestCase {
                 XCTAssertEqual(red(bitmap, x, y), untouched, "speck \(rect)")
             }
         }
+    }
+
+    func testFoldersGetALuminousOutline() throws {
+        let size = NSSize(width: 300, height: 200)
+        let source = NestedDataSource()
+        let root = TMVItem(dataSource: source, delegate: nil, renderedItem: nil, treeMapView: nil)
+        root.calcLayout(NSRect(origin: .zero, size: size))
+        let bitmap = try greyBitmap(size)
+        TreeMapPolish.polish(bitmap, root: root, edge: 1)
+
+        let folder = try XCTUnwrap(root.child(at: 0)).rect()
+        let x = Int(folder.midX), y0 = Int(folder.minY)
+        // the outline is two pixels wide below the root; the cells' own rim is only the first row
+        XCTAssertGreaterThan(red(bitmap, x, y0 + 1), red(bitmap, x, y0 + 3) + 20, "outline below the top rim")
+        let bottom = Int(folder.maxY) - 1
+        XCTAssertGreaterThan(red(bitmap, x, bottom - 1), red(bitmap, x, bottom - 3), "outline above the bottom gutter")
     }
 
     func testBackgroundFillIsDarkIndigoAndCoversTheBitmap() throws {

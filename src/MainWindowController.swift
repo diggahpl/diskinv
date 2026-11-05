@@ -15,8 +15,16 @@ import Cocoa
 @objc(MainWindowController)
 class MainWindowController: OAToolbarWindowControllerEx {
 
+    // The drawers are only the nib's carriers of the kinds and selection views; their
+    // contents live in the sidebar (see installSidebar), the drawers are never opened.
     @IBOutlet private var _kindsDrawer: NSDrawer!
     @IBOutlet private var _selectionListDrawer: NSDrawer!
+
+    private let _sidebar = SidebarView(frame: NSRect(x: 0, y: 0, width: 330, height: 400))
+    private var _sidebarShown = false
+
+    /// Posted (object: this controller) when the sidebar is shown, hidden or switches its tab.
+    static let sidebarDidChangeNotification = NSNotification.Name("MainWindowSidebarDidChange")
     @IBOutlet private var _splitter: NSSplitView!
     @IBOutlet private var _filesOutlineView: NSOutlineView!
     @IBOutlet private var _treeMapView: TreeMapView!
@@ -67,8 +75,74 @@ class MainWindowController: OAToolbarWindowControllerEx {
             _splitter.isVertical = false
         }
         _splitter.autosaveName = "MainWindowSplitter"
+        sizeFreshWindow()
+        installSidebar()
         applyChrome()
-        _kindsDrawer.toggle(self)
+        showSidebar(.kinds)
+    }
+
+    // The nib's window is sized for a drawer layout. A window that has no saved frame gets
+    // room for the outline, the map and the sidebar: the first one is centered, a further
+    // window (AppKit restores a frame autosave name for one window only) keeps its place.
+    private func sizeFreshWindow() {
+        guard let window = _splitter.window, let screen = window.screen ?? NSScreen.main else { return }
+
+        let name = window.frameAutosaveName
+        if !name.isEmpty, UserDefaults.standard.string(forKey: "NSWindow Frame \(name)") != nil { return }
+
+        let visible = screen.visibleFrame
+        let size = NSSize(width: min(1320, visible.width - 80), height: min(820, visible.height - 60))
+        let origin = name.isEmpty
+            ? NSPoint(x: window.frame.minX, y: window.frame.maxY - size.height)
+            : NSPoint(x: visible.midX - size.width / 2, y: visible.midY - size.height / 2)
+        window.setFrame(NSRect(origin: origin, size: size), display: false)
+    }
+
+    // MARK: - sidebar
+
+    // The kinds and selection list views are moved out of the nib's drawers into the sidebar.
+    private func installSidebar() {
+        guard let contentView = _splitter.window?.contentView,
+              let kinds = _kindsDrawer.contentView, let selection = _selectionListDrawer.contentView else { return }
+
+        // the drawers must not keep (and resize) the views they gave away
+        _kindsDrawer.contentView = NSView()
+        _selectionListDrawer.contentView = NSView()
+
+        _sidebar.install(kinds: kinds, selection: selection)
+        _sidebar.autoresizingMask = [.minXMargin, .height]
+        _sidebar.onPaneChange = { [weak self] _ in self.map { NotificationCenter.default.post(name: Self.sidebarDidChangeNotification, object: $0) } }
+        _sidebar.isHidden = true
+        contentView.addSubview(_sidebar)
+    }
+
+    func isSidebarShowing(_ pane: SidebarView.Pane) -> Bool {
+        _sidebarShown && _sidebar.selectedPane == pane
+    }
+
+    /// Shows the sidebar on the given tab.
+    func showSidebar(_ pane: SidebarView.Pane) {
+        _sidebar.select(pane)
+        _sidebarShown = true
+        _sidebar.isHidden = false
+        layoutPanels()
+        NotificationCenter.default.post(name: Self.sidebarDidChangeNotification, object: self)
+    }
+
+    func hideSidebar() {
+        _sidebarShown = false
+        _sidebar.isHidden = true
+        layoutPanels()
+        NotificationCenter.default.post(name: Self.sidebarDidChangeNotification, object: self)
+    }
+
+    /// Menu and toolbar: shows the tab, or hides the sidebar when that tab is the one showing.
+    func toggleSidebar(_ pane: SidebarView.Pane) {
+        if isSidebarShowing(pane) {
+            hideSidebar()
+        } else {
+            showSidebar(pane)
+        }
     }
 
     // MARK: - window chrome
@@ -76,17 +150,11 @@ class MainWindowController: OAToolbarWindowControllerEx {
     // The panels float on the deep-space canvas: rounded, hairline-edged, with
     // the glass status bar (see StatusBarView) underneath.
     private func applyChrome() {
-        guard let window = _splitter.window, let contentView = window.contentView else { return }
+        guard let window = _splitter.window else { return }
 
         window.backgroundColor = Theme.space
-
-        // fill the content area between the margins and above the status bar
-        let margin = StatusBarView.margin
-        let bottom = margin + StatusBarView.height + 10
-        _splitter.frame = NSRect(x: margin, y: bottom,
-                                 width: contentView.bounds.width - 2 * margin,
-                                 height: contentView.bounds.height - bottom - margin)
         _splitter.dividerStyle = .thin
+        layoutPanels()
 
         _filesOutlineView.enclosingScrollView?.borderType = .noBorder
         styleBorders()
@@ -97,6 +165,24 @@ class MainWindowController: OAToolbarWindowControllerEx {
 
         NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(accessibilityOptionsChanged(_:)),
                                                           name: Theme.accessibilityOptionsChanged, object: nil)
+    }
+
+    // The splitter (outline and treemap) and the sidebar fill the content area between the
+    // margins and above the status bar; the sidebar takes its width off the splitter.
+    private func layoutPanels() {
+        guard let contentView = _splitter.window?.contentView else { return }
+
+        let margin = StatusBarView.margin
+        let bottom = margin + StatusBarView.height + 10
+        let height = contentView.bounds.height - bottom - margin
+        let panelWidth = SidebarView.width(forContentWidth: contentView.bounds.width)
+        let sidebarWidth = _sidebarShown ? panelWidth + margin : 0
+
+        _splitter.frame = NSRect(x: margin, y: bottom,
+                                 width: contentView.bounds.width - 2 * margin - sidebarWidth, height: height)
+        _sidebar.frame = NSRect(x: contentView.bounds.width - margin - panelWidth, y: bottom,
+                                width: panelWidth, height: height)
+        _splitter.adjustSubviews()
     }
 
     private func fillOutlineWidth() {
@@ -116,7 +202,7 @@ class MainWindowController: OAToolbarWindowControllerEx {
     }
 
     private func styleBorders() {
-        let panels: [NSView?] = [_filesOutlineView.enclosingScrollView, _treeMapView]
+        let panels: [NSView?] = [_filesOutlineView.enclosingScrollView, _treeMapView, _sidebar]
         for panel in panels {
             panel?.wantsLayer = true
             panel?.layer?.cornerRadius = 10
@@ -138,13 +224,11 @@ class MainWindowController: OAToolbarWindowControllerEx {
         NSWorkspace.shared.notificationCenter.removeObserver(self)
     }
 
-    @objc func kindStatisticsDrawer() -> NSDrawer { _kindsDrawer }
-    @objc func selectionListDrawer() -> NSDrawer { _selectionListDrawer }
-
     // MARK: - menu and toolbar actions
 
-    @IBAction func toggleFileKindsDrawer(_ sender: Any?) { _kindsDrawer.toggle(self) }
-    @IBAction func toggleSelectionListDrawer(_ sender: Any?) { _selectionListDrawer.toggle(self) }
+    // the action names still say "drawer": they are wired in the nib, the menu and the toolbar
+    @IBAction func toggleFileKindsDrawer(_ sender: Any?) { toggleSidebar(.kinds) }
+    @IBAction func toggleSelectionListDrawer(_ sender: Any?) { toggleSidebar(.selection) }
 
     @IBAction func openFile(_ sender: Any?) {
         guard let menuItem = sender as? NSMenuItem else { return }
@@ -340,9 +424,9 @@ class MainWindowController: OAToolbarWindowControllerEx {
         } else if menuAction == #selector(ignoreCreatorCode(_:)) {
             return toggle(doc?.ignoreCreatorCode() ?? false, "Respect Creator Code", "Ignore Creator Code")
         } else if menuAction == #selector(toggleFileKindsDrawer(_:)) {
-            return toggle(_kindsDrawer.state == 0, "Show File Kind Statistics", "Hide File Kind Statistics")  // 0 == NSDrawerClosedState
+            return toggle(!isSidebarShowing(.kinds), "Show File Kind Statistics", "Hide File Kind Statistics")
         } else if menuAction == #selector(toggleSelectionListDrawer(_:)) {
-            return titleToggle(_selectionListDrawer.state == 0, "Show Selection List", "Hide Selection List")  // 0 == NSDrawerClosedState
+            return titleToggle(!isSidebarShowing(.selection), "Show Selection List", "Hide Selection List")
         } else if menuAction == #selector(selectParentItem(_:)) {
             return CommandValidation(isEnabled: selectedItem != nil && selectedItem !== doc?.zoomedItem())
         } else if menuAction == #selector(showInformationPanel(_:)) {

@@ -25,11 +25,6 @@ class DIXOutlineView: NSOutlineView {
         backgroundColor = Theme.spaceRaised
     }
 
-    // the outline is cell-based, so the selection plate is drawn here
-    override func highlightSelection(inClipRect clipRect: NSRect) {
-        GlowSelection.highlightSelectedRows(of: self, in: clipRect)
-    }
-
     override func menu(for event: NSEvent) -> NSMenu? {
         let point = convert(event.locationInWindow, from: nil)
         let columnIndex = column(at: point)

@@ -576,6 +576,18 @@ final class TreeMapPerformanceTests: XCTestCase {
         var hash = Fnv1a()
         hash.addRows(of: bitmap)
 
+        // the finish and the labels, which run after the shader (the hash above is the shader's)
+        print("[TMBENCH] phase polish")
+        let polish = measure(runs: runs) { TreeMapPolish.polish(bitmap, root: root, edge: Int(scale)) }
+        let sizeFormatter = FileSizeFormatter()
+        print("[TMBENCH] phase labels")
+        var labelCount = 0
+        let labels = measure(runs: runs) {
+            labelCount = TreeMapLabels.collect(root: root, view: view, bitmap: bitmap,
+                                               name: { controller.treeMapView(view, getToolTipByItem: $0) },
+                                               size: { sizeFormatter.string(for: NSNumber(value: $0)) ?? "" }).count
+        }
+
         print("""
             [TMBENCH] ----------------------------------------------------------
             [TMBENCH] folder \(path), backing scale \(scale), image \(Int(pixelSize.width))x\(Int(pixelSize.height)), \
@@ -585,6 +597,8 @@ final class TreeMapPerformanceTests: XCTestCase {
             [TMBENCH] layout       median \(millis(median(layout)))   min \(millis(layout.min()!))
             [TMBENCH] render       median \(millis(median(render)))   min \(millis(render.min()!))
             [TMBENCH] hitTest x\(points.count)  median \(millis(median(hits)))   min \(millis(hits.min()!))
+            [TMBENCH] polish       median \(millis(median(polish)))   min \(millis(polish.min()!))
+            [TMBENCH] labels (\(labelCount))  median \(millis(median(labels)))   min \(millis(labels.min()!))
             [TMBENCH] bitmap hash \(hex(hash.value))
             [TMBENCH] ----------------------------------------------------------
             """)

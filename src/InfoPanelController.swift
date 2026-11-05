@@ -41,6 +41,14 @@ class InfoPanelController: NSObject {
         // lifetime is governed by _nibTopLevelObjects only (else closing frees
         // it while the array holds a stale pointer → zombie crash)
         _infoPanel?.isReleasedWhenClosed = false
+
+        // a flat panel of the same deep space as the main window
+        _infoPanel?.backgroundColor = Theme.spaceRaised
+        _infoPanel?.titlebarAppearsTransparent = true
+        _infoView?.enclosingScrollView?.drawsBackground = false
+        _infoView?.enclosingScrollView?.borderType = .noBorder
+        _displayNameTextField?.font = NSFont.systemFont(ofSize: 14, weight: .semibold)
+        _displayNameTextField?.stringValue = ""
     }
 
     @objc func panelIsVisible() -> Bool { panel().isVisible }
@@ -66,7 +74,10 @@ class InfoPanelController: NSObject {
         let currentURL = _infoView.url()
         if currentURL == nil || !fileURL.isEqual(to: currentURL! as NSURL) {
             _displayNameTextField.stringValue = fsItem.displayName()
-            _iconImageView.image = fsItem.icon(withSize: 32)
+            let doc = NSDocumentController.shared.currentDocument as? FileSystemDoc
+            let isNode = doc?.itemIsNode(fsItem) ?? fsItem.isFolder()
+            let kindColor = isNode ? nil : doc?.fileTypeColors().color(forItem: fsItem)
+            _iconImageView.image = FileIcons.icon(for: fsItem, kindColor: kindColor, size: 32)
             _infoView.setURL(fileURL)
         }
     }

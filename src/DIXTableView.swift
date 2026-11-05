@@ -17,6 +17,7 @@ class DIXTableView: NSTableView {
     override func awakeFromNib() {
         super.awakeFromNib()
         backgroundColor = Theme.spaceRaised
+        FlatHeaderView.install(in: self)
     }
 
     // the table is cell-based, so the selection plate is drawn here

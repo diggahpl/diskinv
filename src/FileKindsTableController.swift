@@ -58,11 +58,7 @@ class FileKindsTableController: NSObject {
     }
 
     @IBAction func showFilesInSelectionList(_ sender: Any?) {
-        let drawer = _windowController.selectionListDrawer()
-        // NSDrawerClosedState == 0, NSDrawerClosingState == 3 (unavailable in Swift)
-        if drawer.state == 0 || drawer.state == 3 {
-            drawer.toggle(self)
-        }
+        _windowController.showSidebar(.selection)
 
         let selectedRow = _tableView.selectedRow
         assert(selectedRow >= 0, "kinds tableview should have a selection")
@@ -104,7 +100,8 @@ class FileKindsTableController: NSObject {
 
     // MARK: - private
 
-    // a cushion swatch image for the given row, cached by kind name
+    // the legend chip for the given row, cached by kind name: a small rounded pane in the
+    // color the kind has on the map
     private func colorImage(forRow row: Int, column: NSTableColumn?) -> NSImage? {
         guard let kindStatistic = (_kindsTableArrayController.arrangedObjects as? [Any])?[row] as? FileKindStatistic
         else { return nil }
@@ -113,18 +110,25 @@ class FileKindsTableController: NSObject {
 
         var image = _cushionImages[kindStatistic.kindName]
         if image == nil || image!.size != cellSize {
-            guard let bitmap = NSBitmapImageRep(rgbBitmapWithWidth: Int(cellSize.width), height: Int(cellSize.height))
-            else { return image }
-            let cushionRenderer = TMVCushionRenderer(rect: NSRect(origin: .zero, size: cellSize))
-
-            cushionRenderer.setColor(document()?.fileTypeColors().color(forKind: kindStatistic.kindName) ?? .black)
-            cushionRenderer.addRidge(byHeightFactor: 0.5)
-            cushionRenderer.renderCushion(inBitmap: bitmap)
-
-            image = bitmap.suitableImage(for: _tableView)
+            let kindColor = document()?.fileTypeColors().color(forKind: kindStatistic.kindName) ?? .black
+            image = Self.chip(color: Theme.cushionDisplayColor(kindColor), size: cellSize)
             _cushionImages[kindStatistic.kindName] = image
         }
         return image
+    }
+
+    private static func chip(color: NSColor, size: NSSize) -> NSImage {
+        NSImage(size: size, flipped: false) { rect in
+            let chip = rect.insetBy(dx: 5, dy: max((rect.height - 12) / 2, 2))
+            let path = NSBezierPath(roundedRect: chip, xRadius: 4, yRadius: 4)
+            let top = color.blended(withFraction: 0.30, of: .white) ?? color
+            let bottom = color.blended(withFraction: 0.22, of: .black) ?? color
+            NSGradient(starting: top, ending: bottom)?.draw(in: path, angle: -90)
+            NSColor(white: 1, alpha: 0.28).setStroke()
+            path.lineWidth = 0.5
+            path.stroke()
+            return true
+        }
     }
 
     private func setTableViewFont() {
@@ -132,7 +136,7 @@ class FileKindsTableController: NSObject {
             ? NSFont.smallSystemFontSize
             : NSFont.systemFontSize
         _tableView.font = NSFont.systemFont(ofSize: fontSize)
-        _tableView.rowHeight = fontSize + 4
+        _tableView.rowHeight = (fontSize * 1.7).rounded()
     }
 
     @objc private func documentSelectionChanged(_ notification: Notification) {

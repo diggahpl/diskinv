@@ -235,11 +235,12 @@ class TreeMapViewController: NSObject {
 
     // MARK: - private
 
-    // The status bar shows the item under the pointer, or else the selected one.
+    // The status bar shows the item under the pointer, or else the selected one, or else
+    // the folder the map shows.
     private func showReadout() {
-        guard let fsItem = _touchedItem ?? (_treeMapView.selectedItem() as? FSItem) else {
-            _fileNameTextField.stringValue = ""
-            _fileSizeTextField.stringValue = ""
+        guard let fsItem = _touchedItem ?? (_treeMapView.selectedItem() as? FSItem) ?? rootItem() else {
+            _fileNameTextField?.stringValue = ""
+            _fileSizeTextField?.stringValue = ""
             _statusBar?.setSwatchColor(nil)
             return
         }
@@ -248,12 +249,15 @@ class TreeMapViewController: NSObject {
         let size = FileSizeFormatter().string(for: fsItem.size()) ?? ""
 
         if !fsItem.isSpecialItem() {
-            displayName += " (\(fsItem.displayFolderName()))"
-            _fileSizeTextField.stringValue = "\(fsItem.kindName()), \(size)"
+            let folder = fsItem.displayFolderName()
+            if !folder.isEmpty {
+                displayName += " (\(folder))"
+            }
+            _fileSizeTextField?.stringValue = "\(fsItem.kindName()), \(size)"
         } else {
-            _fileSizeTextField.stringValue = size
+            _fileSizeTextField?.stringValue = size
         }
-        _fileNameTextField.stringValue = displayName
+        _fileNameTextField?.stringValue = displayName
 
         _statusBar?.setSwatchColor(swatchColor(for: fsItem))
     }
@@ -262,7 +266,10 @@ class TreeMapViewController: NSObject {
     private func swatchColor(for fsItem: FSItem) -> NSColor? {
         let type = fsItem.type()
         let base: NSColor?
-        if type == FileFolderItem {
+        if type == FileFolderItem, document()?.itemIsNode(fsItem) ?? false {
+            // folders have no kind color of their own: the glassy blue of their icon
+            return FileIcons.folderColor
+        } else if type == FileFolderItem {
             base = document()?.fileTypeColors().color(forItem: fsItem)
         } else if type == FreeSpaceItem {
             base = Theme.freeSpace

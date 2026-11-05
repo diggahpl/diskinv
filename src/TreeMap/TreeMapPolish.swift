@@ -9,10 +9,12 @@
 //      own color, so the edge glows in the kind color,
 //    - a gutter of deep space on its bottom and right edge, so the cells float
 //      apart instead of touching,
-//    - and, for large cells, a soft glint where a glass pane would catch the light.
-//  Cells overlap neither each other nor any other cell's edge, so the pass shades
-//  them concurrently. With Increase Contrast the gutters are firmer and the glints
-//  are left out.
+//    - and, for large cells, a flatter cushion with a diagonal sheen, like a glass
+//      pane catching the light, instead of a round hot spot.
+//  Folders get a luminous outline, so the tree behind the cells shows. Cells overlap
+//  neither each other nor any other cell's edge, so the pass shades them
+//  concurrently; the folder outlines are drawn afterwards. With Increase Contrast
+//  the gutters and outlines are firmer and the sheen is left out.
 //
 //  GPL v3
 //
@@ -23,11 +25,18 @@ enum TreeMapPolish {
 
     // the smallest cell (in pixels, either side) that gets rim and gutter
     private static let minimumEdgeCell = 5
-    // the smallest cell that also gets a glint
-    private static let minimumGlintCell = 28
+    // the smallest cell that is also flattened and gets a sheen
+    private static let minimumSheenCell = 28
+    // the smallest folder that gets an outline
+    private static let minimumFrame = 24
 
     private struct Cell {
         var x0: Int, y0: Int, x1: Int, y1: Int   // half-open pixel rect
+    }
+
+    private struct Frame {
+        var x0: Int, y0: Int, x1: Int, y1: Int   // half-open pixel rect
+        var depth: Int                           // 1 for the folders directly below the root
     }
 
     /// Polishes the cells below `root` in `bitmap`. `edge` is the width in pixels
@@ -42,7 +51,8 @@ enum TreeMapPolish {
         grade(pixels: pixels, bytesPerRow: bytesPerRow, width: width, height: height)
 
         var cells: [Cell] = []
-        collectCells(of: root, edge: edge, width: width, height: height, into: &cells)
+        var frames: [Frame] = []
+        collectCells(of: root, depth: 0, edge: edge, width: width, height: height, cells: &cells, frames: &frames)
         if cells.isEmpty { return }
 
         let contrast = Theme.increaseContrast
@@ -57,9 +67,13 @@ enum TreeMapPolish {
                 let end = cells.count * (chunk + 1) / chunkCount
                 for index in start..<end {
                     polishCell(cells[index], pixels: pixels, bytesPerRow: bytesPerRow, edge: edge,
-                               gutterStrength: gutterStrength, rimBoost: rimBoost, glint: !contrast)
+                               gutterStrength: gutterStrength, rimBoost: rimBoost, sheen: !contrast)
                 }
             }
+        }
+
+        for frame in frames {
+            outline(frame, pixels: pixels, bytesPerRow: bytesPerRow, edge: edge, contrast: contrast)
         }
     }
 
@@ -91,24 +105,32 @@ enum TreeMapPolish {
         }
     }
 
-    // Leaves of at least the edge-cell size; nodes smaller than that hold nothing bigger.
-    private static func collectCells(of item: TMVItem, edge: Int, width: Int, height: Int,
-                                     into cells: inout [Cell]) {
+    // Leaves of at least the edge-cell size, and the folders big enough for an outline;
+    // nodes smaller than that hold nothing bigger.
+    private static func collectCells(of item: TMVItem, depth: Int, edge: Int, width: Int, height: Int,
+                                     cells: inout [Cell], frames: inout [Frame]) {
         let rect = item.rect()
         let w = Int(rect.width), h = Int(rect.height)
         if w < minimumEdgeCell * edge || h < minimumEdgeCell * edge { return }
 
+        let inside = Int(rect.minX) >= 0 && Int(rect.minY) >= 0 && Int(rect.maxX) <= width && Int(rect.maxY) <= height
+
         if item.isLeaf() {
-            let cell = Cell(x0: Int(rect.minX), y0: Int(rect.minY), x1: Int(rect.maxX), y1: Int(rect.maxY))
-            if cell.x0 >= 0, cell.y0 >= 0, cell.x1 <= width, cell.y1 <= height {
-                cells.append(cell)
+            if inside {
+                cells.append(Cell(x0: Int(rect.minX), y0: Int(rect.minY), x1: Int(rect.maxX), y1: Int(rect.maxY)))
             }
             return
         }
 
+        if depth > 0, inside, w >= minimumFrame * edge, h >= minimumFrame * edge {
+            frames.append(Frame(x0: Int(rect.minX), y0: Int(rect.minY), x1: Int(rect.maxX), y1: Int(rect.maxY),
+                                depth: depth))
+        }
+
         for index in 0..<item.childCount() {
             if let child = item.child(at: UInt(index)) {
-                collectCells(of: child, edge: edge, width: width, height: height, into: &cells)
+                collectCells(of: child, depth: depth + 1, edge: edge, width: width, height: height,
+                             cells: &cells, frames: &frames)
             }
         }
     }
@@ -117,13 +139,13 @@ enum TreeMapPolish {
     private static let space: (Int, Int, Int) = (6, 9, 18)
 
     private static func polishCell(_ cell: Cell, pixels: UnsafeMutablePointer<UInt8>, bytesPerRow: Int,
-                                   edge: Int, gutterStrength: Int, rimBoost: Int, glint: Bool) {
+                                   edge: Int, gutterStrength: Int, rimBoost: Int, sheen: Bool) {
         let w = cell.x1 - cell.x0
         let h = cell.y1 - cell.y0
 
-        // glint first, so rim and gutter sit on top of it
-        if glint, w >= minimumGlintCell * edge, h >= minimumGlintCell * edge {
-            addGlint(cell, pixels: pixels, bytesPerRow: bytesPerRow)
+        // flatten and sheen first, so rim and gutter sit on top of them
+        if w >= minimumSheenCell * edge, h >= minimumSheenCell * edge {
+            flatten(cell, pixels: pixels, bytesPerRow: bytesPerRow, sheen: sheen)
         }
 
         // rim light: top rows and left columns, a brightened copy of the pixel itself
@@ -163,33 +185,66 @@ enum TreeMapPolish {
         pixel[2] = UInt8((Int(pixel[2]) * (256 - strength) + space.2 * strength) >> 8)
     }
 
-    // A soft white highlight in the upper left of the cell, an ellipse of up to
-    // 120 px per half-axis whose intensity falls off with the square of the distance.
-    private static func addGlint(_ cell: Cell, pixels: UnsafeMutablePointer<UInt8>, bytesPerRow: Int) {
-        let w = Double(cell.x1 - cell.x0)
-        let h = Double(cell.y1 - cell.y0)
-        let rx = min(w * 0.34, 120)
-        let ry = min(h * 0.30, 120)
-        let cx = Double(cell.x0) + w * 0.27
-        let cy = Double(cell.y0) + h * 0.22
+    // The shader's cushions bulge a lot, which makes big cells look like pillows. Pull
+    // every pixel 40% of the way to the cell's average color, then tilt the cell with
+    // a diagonal sheen: lighter at the upper left, darker at the lower right.
+    private static func flatten(_ cell: Cell, pixels: UnsafeMutablePointer<UInt8>, bytesPerRow: Int, sheen: Bool) {
+        let w = cell.x1 - cell.x0
+        let h = cell.y1 - cell.y0
 
-        let xStart = max(Int(cx - rx), cell.x0), xEnd = min(Int(cx + rx) + 1, cell.x1)
-        let yStart = max(Int(cy - ry), cell.y0), yEnd = min(Int(cy + ry) + 1, cell.y1)
-
-        for y in yStart..<yEnd {
-            let dy = (Double(y) + 0.5 - cy) / ry
-            let row = pixels + y * bytesPerRow
-            for x in xStart..<xEnd {
-                let dx = (Double(x) + 0.5 - cx) / rx
-                let d2 = dx * dx + dy * dy
-                if d2 >= 1 { continue }
-                let falloff = (1 - d2) * (1 - d2)
-                let add = Int(falloff * 46)
-                let pixel = row + x * 3
-                pixel[0] = UInt8(min(255, Int(pixel[0]) + add))
-                pixel[1] = UInt8(min(255, Int(pixel[1]) + add))
-                pixel[2] = UInt8(min(255, Int(pixel[2]) + add))
+        // the average, from a grid of samples
+        var sum = (0, 0, 0)
+        let steps = 8
+        for j in 0..<steps {
+            let row = pixels + (cell.y0 + h * (2 * j + 1) / (2 * steps)) * bytesPerRow
+            for i in 0..<steps {
+                let p = row + (cell.x0 + w * (2 * i + 1) / (2 * steps)) * 3
+                sum.0 += Int(p[0]); sum.1 += Int(p[1]); sum.2 += Int(p[2])
             }
+        }
+        let mean = (sum.0 / (steps * steps), sum.1 / (steps * steps), sum.2 / (steps * steps))
+
+        let keep = 154                                    // 0.6 in 8.8 fixed point
+        let amplitude = sheen ? 22 : 0
+        for y in cell.y0..<cell.y1 {
+            let row = pixels + y * bytesPerRow
+            let ty = (y - cell.y0) * 512 / h              // 0...512, half the diagonal
+            for x in cell.x0..<cell.x1 {
+                let t = ((x - cell.x0) * 512 / w + ty) / 2    // 0 at the upper left, 512 at the lower right
+                let tilt = (256 - t) * amplitude / 256
+                let p = row + x * 3
+                p[0] = UInt8(max(0, min(255, mean.0 + (((Int(p[0]) - mean.0) * keep) >> 8) + tilt)))
+                p[1] = UInt8(max(0, min(255, mean.1 + (((Int(p[1]) - mean.1) * keep) >> 8) + tilt)))
+                p[2] = UInt8(max(0, min(255, mean.2 + (((Int(p[2]) - mean.2) * keep) >> 8) + tilt)))
+            }
+        }
+    }
+
+    // A luminous line around a folder, so the tree shows behind the cells: two pixels
+    // wide around the folders directly below the root, one around the deeper ones.
+    private static func outline(_ frame: Frame, pixels: UnsafeMutablePointer<UInt8>, bytesPerRow: Int,
+                                edge: Int, contrast: Bool) {
+        let strengths = contrast ? [210, 170, 140] : [120, 84, 56]       // of 256, by depth
+        let strength = strengths[min(frame.depth, strengths.count) - 1]
+        let lineWidth = (frame.depth == 1 ? 2 : 1) * edge
+
+        for e in 0..<lineWidth {
+            for x in frame.x0..<frame.x1 {
+                lighten(pixels + (frame.y0 + e) * bytesPerRow + x * 3, strength: strength)
+                lighten(pixels + (frame.y1 - 1 - e) * bytesPerRow + x * 3, strength: strength)
+            }
+            for y in (frame.y0 + lineWidth)..<(frame.y1 - lineWidth) {
+                lighten(pixels + y * bytesPerRow + (frame.x0 + e) * 3, strength: strength)
+                lighten(pixels + y * bytesPerRow + (frame.x1 - 1 - e) * 3, strength: strength)
+            }
+        }
+    }
+
+    @inline(__always)
+    private static func lighten(_ pixel: UnsafeMutablePointer<UInt8>, strength: Int) {
+        for channel in 0..<3 {
+            let p = Int(pixel[channel])
+            pixel[channel] = UInt8(p + (((255 - p) * strength) >> 8))
         }
     }
 }

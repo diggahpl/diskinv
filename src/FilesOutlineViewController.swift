@@ -36,11 +36,7 @@ class FilesOutlineViewController: NSObject, NSOutlineViewDataSource, NSOutlineVi
         center.addObserver(self, selector: #selector(windowWillClose(_:)),
                            name: NSWindow.willCloseNotification, object: _outlineView?.window)
 
-        // ImageAndTextCell as the data cell for the first (outline) column
-        _outlineView?.outlineTableColumn?.dataCell = ImageAndTextCell.cell()
-
-        let sizeFormatter = FileSizeFormatter()
-        (_outlineView?.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier("size"))?.dataCell as? NSCell)?.formatter = sizeFormatter
+        configureOutline()
 
         NSUserDefaultsController.shared.addObserver(self, forKeyPath: fontPrefKeyPath, options: [], context: nil)
         doc?.addObserver(self, forKeyPath: DocKeySelectedItem, options: [], context: nil)
@@ -96,14 +92,39 @@ class FilesOutlineViewController: NSObject, NSOutlineViewDataSource, NSOutlineVi
 
     // MARK: - NSOutlineView delegate
 
-    func outlineView(_ outlineView: NSOutlineView, willDisplayCell cell: Any,
-                     for tableColumn: NSTableColumn?, item: Any) {
-        if tableColumn?.identifier.rawValue == "displayName",
-           let fsItem = item as? FSItem,
-           let cell = cell as? ImageAndTextCell {
-            // default-font row height is 17px, so subtract 1
-            cell.image = fsItem.icon(withSize: UInt32(outlineView.rowHeight - 1))
+    func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
+        guard let fsItem = item as? FSItem, let column = tableColumn?.identifier.rawValue else { return nil }
+        let doc = document()
+        let isNode = doc?.itemIsNode(fsItem) ?? false
+        // folders have no kind color; everything shown as a cell on the map has one
+        let kindColor = isNode || fsItem.isSpecialItem() ? nil : doc?.fileTypeColors().color(forItem: fsItem)
+
+        switch column {
+        case "displayName":
+            let cell = outlineView.makeView(withIdentifier: FileNameCellView.identifier, owner: self) as? FileNameCellView
+                ?? FileNameCellView(frame: .zero)
+            cell.configure(name: fsItem.displayName(),
+                           icon: FileIcons.icon(for: fsItem, kindColor: kindColor, size: iconSize),
+                           iconSize: iconSize, fontSize: fontSize, emphasized: isNode)
+            return cell
+        case "size":
+            let cell = outlineView.makeView(withIdentifier: FileSizeCellView.identifier, owner: self) as? FileSizeCellView
+                ?? FileSizeCellView(frame: .zero)
+            // the bar compares the item with its largest sibling (children are sorted by size)
+            let largest = fsItem.parent()?.child(at: 0)?.sizeValue() ?? 0
+            let share = largest > 0 ? CGFloat(fsItem.sizeValue()) / CGFloat(largest) : 0
+            cell.configure(size: fsItem.size(), share: share,
+                           color: kindColor.map { Theme.cushionDisplayColor($0) } ?? FileIcons.folderColor,
+                           fontSize: fontSize)
+            return cell
+        default:
+            return nil
         }
+    }
+
+    func outlineView(_ outlineView: NSOutlineView, rowViewForItem item: Any) -> NSTableRowView? {
+        outlineView.makeView(withIdentifier: FileRowView.identifier, owner: self) as? FileRowView
+            ?? FileRowView(frame: .zero)
     }
 
     // DIXOutlineView forwards its context-menu query here (informal protocol)
@@ -211,16 +232,33 @@ class FilesOutlineViewController: NSObject, NSOutlineViewDataSource, NSOutlineVi
         }
     }
 
-    private func setOutlineViewFont() {
-        let fontSize: CGFloat = UserDefaults.standard.bool(forKey: UseSmallFontInFilesView)
+    // MARK: - look
+
+    private var fontSize: CGFloat {
+        UserDefaults.standard.bool(forKey: UseSmallFontInFilesView)
             ? NSFont.smallSystemFontSize
             : NSFont.systemFontSize
-        _outlineView?.font = NSFont.systemFont(ofSize: fontSize)
-        _outlineView?.rowHeight = fontSize + 4
+    }
 
-        // sizes in width-stable numerals, so the digits line up row by row
-        let sizeColumn = _outlineView?.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier("size"))
-        (sizeColumn?.dataCell as? NSCell)?.font = Theme.numericFont(ofSize: fontSize)
+    private var iconSize: CGFloat { fontSize + 3 }
+
+    // The outline is view-based: icons, names and sizes are views (FileOutlineCells.swift)
+    // with room to breathe, a glass selection row and a flat header.
+    private func configureOutline() {
+        guard let outline = _outlineView else { return }
+
+        outline.style = .plain
+        outline.indentationPerLevel = 16
+        outline.intercellSpacing = NSSize(width: 6, height: 0)
+        outline.floatsGroupRows = false
+
+        FlatHeaderView.install(in: outline)
+        outline.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier("size"))?.headerCell.alignment = .right
+    }
+
+    private func setOutlineViewFont() {
+        _outlineView?.rowHeight = (fontSize * 1.85).rounded()
+        _outlineView?.reloadData()
     }
 
     private func reloadData() {

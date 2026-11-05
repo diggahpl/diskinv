@@ -63,7 +63,7 @@ class ImageAndTextCell: NSTextFieldCell {
 
     override func draw(withFrame cellFrame: NSRect, in controlView: NSView) {
         var cellFrame = cellFrame
-        // the default-font row height is 17px, so draw the icon at 16x16
+        // the icon is a 16x16 square, centered in the row
         let imageSize: NSSize = (_image == nil) ? .zero : NSSize(width: 16, height: 16)
 
         let (slice, remainder) = cellFrame.divided(atDistance: Self.textOffset + imageSize.width,
@@ -78,15 +78,11 @@ class ImageAndTextCell: NSTextFieldCell {
 
         if let image = _image {
             imageFrame.origin.x += Self.imageOffset
+            imageFrame.origin.y += ((cellFrame.size.height - imageSize.height) / 2).rounded()
             imageFrame.size = imageSize
 
-            if controlView.isFlipped {
-                imageFrame.origin.y += ceil((cellFrame.size.height + imageFrame.size.height) / 2)
-            } else {
-                imageFrame.origin.y += ceil((cellFrame.size.height - imageFrame.size.height) / 2)
-            }
-
-            image.draw(at: imageFrame.origin, from: .zero, operation: .sourceOver, fraction: 1.0)
+            image.draw(in: imageFrame, from: .zero, operation: .sourceOver, fraction: 1.0,
+                       respectFlipped: true, hints: nil)
         }
 
         if let font = self.font {

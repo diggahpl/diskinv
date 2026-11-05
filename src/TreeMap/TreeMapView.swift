@@ -67,6 +67,7 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
     private var _selectedRenderer: TMVItem?
     private var _touchedRenderer: TMVItem?
     private var _cachedContent: NSBitmapImageRep?
+    private var _labels: [TreeMapLabel] = []
     private var _zoomer: ZoomInfo?        // non-nil while zooming; doubles as the "are we zooming" flag
 
     // The IBOutlet delegate/dataSource stay untyped (id/Any?) with the bare names
@@ -243,6 +244,8 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
                 image.draw(in: rect, from: source, operation: .copy, fraction: 1,
                            respectFlipped: true, hints: nil)
             }
+
+            TreeMapLabels.draw(_labels, in: rect)
 
             if let touchedRenderer = _touchedRenderer, touchedRenderer !== _selectedRenderer {
                 TreeMapGlow.drawHover(in: itemRect(byCellId: touchedRenderer))
@@ -662,7 +665,20 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
         allocContentCache()
         if let cache = _cachedContent {
             renderContent(into: cache)
+            collectLabels(from: cache)
         }
+    }
+
+    // the names on the big cells; the delegate's tool tip text is the item's name
+    private func collectLabels(from bitmap: NSBitmapImageRep) {
+        guard let root = _rootItemRenderer else { return }
+        let sizeFormatter = FileSizeFormatter()
+        _labels = TreeMapLabels.collect(root: root, view: self, bitmap: bitmap,
+                                        name: { [weak self] item in
+                                            guard let self = self else { return nil }
+                                            return self.delegateProto?.treeMapView?(self, getToolTipByItem: item) ?? nil
+                                        },
+                                        size: { sizeFormatter.string(for: NSNumber(value: $0)) ?? "" })
     }
 
     private func allocContentCache() {
@@ -679,6 +695,7 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
 
     private func deallocContentCache() {
         _cachedContent = nil
+        _labels = []
     }
 
     private func findTMVItem(byPathToDataItem path: [Any]) -> TMVItem? {

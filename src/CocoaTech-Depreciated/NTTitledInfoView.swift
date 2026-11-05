@@ -268,15 +268,13 @@ class NTTitledInfoView: NSView {
         NTTitledInfoView._titleShadowColor
     }
 
-    private static let _titleShadowColor: NSColor =
-        NSColor(calibratedRed: 0.6, green: 0.6, blue: 0.9, alpha: 0.1).withAlphaComponent(0.1)
+    private static let _titleShadowColor: NSColor = NSColor(white: 1, alpha: 0.035)
 
     private func infoLineColor() -> NSColor {
         NTTitledInfoView._infoLineColor
     }
 
-    private static let _infoLineColor: NSColor =
-        NSColor(calibratedRed: 0.6, green: 0.6, blue: 0.9, alpha: 0.1)
+    private static let _infoLineColor: NSColor = NSColor(white: 1, alpha: 0.07)
 
     private func drawBackgroundShadow() {
         var viewRect = bounds
@@ -289,51 +287,11 @@ class NTTitledInfoView: NSView {
 
     private func drawBackgroundLines() {
         let bounds = self.bounds
-        var viewRect = bounds
 
-        let whiteLineColor = NSColor.separatorColor
-
-        // draw lines
+        // one hairline under each row, no stripes below the last one
+        infoLineColor().set()
         for offset in _backgroundLineOffsets {
-            viewRect = bounds
-
-            viewRect.origin.y = offset
-            viewRect.size.height = 1
-
-            viewRect.size.width += _backgroundShadowOffset
-
-            whiteLineColor.set()
-            NSBezierPath.fill(viewRect)
-
-            viewRect.origin.x += _backgroundShadowOffset
-            viewRect.size.width = bounds.size.width
-
-            infoLineColor().set()
-            NSBezierPath.fill(viewRect)
-        }
-
-        var lastLineHeight: CGFloat = 12.0
-        if _backgroundLineOffsets.count > 2 {
-            lastLineHeight = _backgroundLineOffsets[_backgroundLineOffsets.count - 1]
-                - _backgroundLineOffsets[_backgroundLineOffsets.count - 2]
-        }
-
-        let maxBounds = min(bounds.maxY, 10000.0) // had a strange bug where bounds was like 10e23 and looped forever, bounds was not set or negative or something
-        while viewRect.origin.y < maxBounds {
-            viewRect.origin.y += lastLineHeight
-            viewRect.size.height = 1.0
-
-            viewRect.origin.x = bounds.origin.x
-            viewRect.size.width += _backgroundShadowOffset
-
-            whiteLineColor.set()
-            NSBezierPath.fill(viewRect)
-
-            viewRect.origin.x = bounds.origin.x + _backgroundShadowOffset
-            viewRect.size.width = bounds.size.width
-
-            infoLineColor().set()
-            NSBezierPath.fill(viewRect)
+            NSBezierPath.fill(NSRect(x: bounds.minX, y: offset, width: bounds.width, height: 1))
         }
     }
 
@@ -348,8 +306,8 @@ class NTTitledInfoView: NSView {
 
         return [
             .paragraphStyle: paragraphStyle,
-            .font: NSFont.boldSystemFont(ofSize: 10),
-            .foregroundColor: NSColor.controlTextColor,
+            .font: NSFont.systemFont(ofSize: 10, weight: .semibold),
+            .foregroundColor: NSColor(white: 1, alpha: 0.5),
         ]
     }()
 
@@ -364,8 +322,8 @@ class NTTitledInfoView: NSView {
 
         return [
             .paragraphStyle: paragraphStyle,
-            .font: NSFont.systemFont(ofSize: 10),
-            .foregroundColor: NSColor.controlTextColor,
+            .font: NSFont.systemFont(ofSize: 11),
+            .foregroundColor: NSColor.labelColor,
         ]
     }()
 }

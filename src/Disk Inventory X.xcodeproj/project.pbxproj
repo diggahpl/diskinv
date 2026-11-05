@@ -35,6 +35,8 @@
 		70F3A1D4CEFCD380BBE4BAB2 /* FSItemScanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBFE2559DC8E30F4BE2D3B44 /* FSItemScanTests.swift */; };
 		7FEC4DA66230B5B56D26C3C7 /* ThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A04F29AA041F3CCA557FA7 /* ThemeTests.swift */; };
 		A7D3C1E95B2F4086AC1D7E30 /* TreeMapViewDrawTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E81B4F2C09A7D63E4B1A8C2 /* TreeMapViewDrawTests.swift */; };
+		6C1E8A3D5B7F4092E4A6C8D1 /* FileIconsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2D4F6A8C0E13579D5B7F9A1 /* FileIconsTests.swift */; };
+		9E3A5C7D1F2B4068A8C0E2F4 /* TreeMapLabelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B9D1E3A5C70286C4E6A8B0 /* TreeMapLabelsTests.swift */; };
 		BA619288688411473B8C676C /* TreeMapPolishTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DD7DCDEF475A14ED6F1C418 /* TreeMapPolishTests.swift */; };
 		A1B2C3D4E5F60718293A4B5C /* FSItemSizePropagationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* FSItemSizePropagationTests.swift */; };
 		78B37DB4F3B5F64264236053 /* FSItemIndexType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E32B771FDFC845773CA59141 /* FSItemIndexType.swift */; };
@@ -47,6 +49,7 @@
 		99F17B7029B81682DFD9543A /* TMVItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD83A6BBF628EAFD893F691B /* TMVItem.swift */; };
 		6CEBBE2D33084600CC9B4616 /* TreeMapGlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54DE43A05D017D946EC6F69F /* TreeMapGlow.swift */; };
 		E69E6BDB2E379FBAB7DAA0DE /* TreeMapPolish.swift in Sources */ = {isa = PBXBuildFile; fileRef = 406D21FCD440313874E3CA86 /* TreeMapPolish.swift */; };
+		7B3E9C2A5D1F4608B2E7A9D1 /* TreeMapLabels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A8C3E1F7B94026A3C9E5B7 /* TreeMapLabels.swift */; };
 		9D2C5E2041F1C77F43961414 /* FileKindsPopupController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B97F105B53A3491AE4483C08 /* FileKindsPopupController.swift */; };
 		9DBAD17CB42ACC457E64701C /* NTTitledInfoPair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F041B846D215F56FD71B86 /* NTTitledInfoPair.swift */; };
 		A38A5DC9B22A95B97DC718C0 /* NSDictionary+DIX.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCE7DA50E548B4B914FF582F /* NSDictionary+DIX.swift */; };
@@ -64,6 +67,9 @@
 		DF7F1C4BDD1BF388305A7583 /* TestFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10DDD98E114047F8AA68692C /* TestFixtures.swift */; };
 		E526153216CF337C89AD16B8 /* FileTypeColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C3BB9BCC1F32AEEE06510E /* FileTypeColors.swift */; };
 		220F3DF24BC7FF1245CB830C /* GlowSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6456AF5339858A36F07652D8 /* GlowSelection.swift */; };
+		3B9E7A1C5D4F2860A1C8E5D7 /* FileIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2F6B0A9C7E4513F2A6B8D1 /* FileIcons.swift */; };
+		E27C9A4D1B6F3058C9A2D4E7 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A9D1C7E3B5F2086D1E8A3C5 /* SidebarView.swift */; };
+		C4A7D1E9B3F85260D7E1A9C3 /* FileOutlineCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F8B3D5E7A9C2064B8D3F5A7 /* FileOutlineCells.swift */; };
 		C74C3785B1738B02C038181B /* StatusBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E01570DF39F1C7FB2F91E9 /* StatusBarView.swift */; };
 		09715578D4A8410794D655B7 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB5987E86E84AD65B39BCDF9 /* Theme.swift */; };
 		E8878A0F4CF1F0C784428267 /* PreferenceKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A24E71ADB344AE8026F730 /* PreferenceKeys.swift */; };
@@ -150,6 +156,9 @@
 		858D2D141C67702695FB5E29 /* NTFilePasteboardSource.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NTFilePasteboardSource.swift; sourceTree = "<group>"; };
 		85C3BB9BCC1F32AEEE06510E /* FileTypeColors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileTypeColors.swift; sourceTree = "<group>"; };
 		6456AF5339858A36F07652D8 /* GlowSelection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlowSelection.swift; sourceTree = "<group>"; };
+		8D2F6B0A9C7E4513F2A6B8D1 /* FileIcons.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileIcons.swift; sourceTree = "<group>"; };
+		4A9D1C7E3B5F2086D1E8A3C5 /* SidebarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
+		1F8B3D5E7A9C2064B8D3F5A7 /* FileOutlineCells.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileOutlineCells.swift; sourceTree = "<group>"; };
 		76E01570DF39F1C7FB2F91E9 /* StatusBarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatusBarView.swift; sourceTree = "<group>"; };
 		BB5987E86E84AD65B39BCDF9 /* Theme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		89198A9697C1C62E945AD311 /* FileSystemDocSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileSystemDocSupport.swift; sourceTree = "<group>"; };
@@ -170,11 +179,14 @@
 		BD83A6BBF628EAFD893F691B /* TMVItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TMVItem.swift; sourceTree = "<group>"; };
 		54DE43A05D017D946EC6F69F /* TreeMapGlow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TreeMapGlow.swift; sourceTree = "<group>"; };
 		406D21FCD440313874E3CA86 /* TreeMapPolish.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TreeMapPolish.swift; sourceTree = "<group>"; };
+		D5A8C3E1F7B94026A3C9E5B7 /* TreeMapLabels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TreeMapLabels.swift; sourceTree = "<group>"; };
 		C030D33FA084A8BCA00CAC91 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		C6255670E06006ACD3C209B0 /* DrivesPanelController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DrivesPanelController.swift; sourceTree = "<group>"; };
 		CBFE2559DC8E30F4BE2D3B44 /* FSItemScanTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FSItemScanTests.swift; sourceTree = "<group>"; };
 		C1A04F29AA041F3CCA557FA7 /* ThemeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ThemeTests.swift; sourceTree = "<group>"; };
 		5E81B4F2C09A7D63E4B1A8C2 /* TreeMapViewDrawTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TreeMapViewDrawTests.swift; sourceTree = "<group>"; };
+		B2D4F6A8C0E13579D5B7F9A1 /* FileIconsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileIconsTests.swift; sourceTree = "<group>"; };
+		F7B9D1E3A5C70286C4E6A8B0 /* TreeMapLabelsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TreeMapLabelsTests.swift; sourceTree = "<group>"; };
 		7DD7DCDEF475A14ED6F1C418 /* TreeMapPolishTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TreeMapPolishTests.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B5D /* FSItemSizePropagationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FSItemSizePropagationTests.swift; sourceTree = "<group>"; };
 		CED9066B2687FE020DF4B67F /* FSItem-Utilities.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "FSItem-Utilities.swift"; sourceTree = "<group>"; };
@@ -278,6 +290,7 @@
 				BD83A6BBF628EAFD893F691B /* TMVItem.swift */,
 				54DE43A05D017D946EC6F69F /* TreeMapGlow.swift */,
 				406D21FCD440313874E3CA86 /* TreeMapPolish.swift */,
+				D5A8C3E1F7B94026A3C9E5B7 /* TreeMapLabels.swift */,
 				D2B23920DF00C35746695256 /* TreeMapView.swift */,
 			);
 			name = TreeMap;
@@ -350,6 +363,9 @@
 				5B7C89F055C7202EF5EF2FF0 /* AppsForItem.swift */,
 				85C3BB9BCC1F32AEEE06510E /* FileTypeColors.swift */,
 				6456AF5339858A36F07652D8 /* GlowSelection.swift */,
+				8D2F6B0A9C7E4513F2A6B8D1 /* FileIcons.swift */,
+				4A9D1C7E3B5F2086D1E8A3C5 /* SidebarView.swift */,
+				1F8B3D5E7A9C2064B8D3F5A7 /* FileOutlineCells.swift */,
 				76E01570DF39F1C7FB2F91E9 /* StatusBarView.swift */,
 				BB5987E86E84AD65B39BCDF9 /* Theme.swift */,
 				910371DEE0676DBED23D2C5D /* NSString+DIX.swift */,
@@ -418,6 +434,8 @@
 				CBFE2559DC8E30F4BE2D3B44 /* FSItemScanTests.swift */,
 				C1A04F29AA041F3CCA557FA7 /* ThemeTests.swift */,
 				5E81B4F2C09A7D63E4B1A8C2 /* TreeMapViewDrawTests.swift */,
+				B2D4F6A8C0E13579D5B7F9A1 /* FileIconsTests.swift */,
+				F7B9D1E3A5C70286C4E6A8B0 /* TreeMapLabelsTests.swift */,
 				7DD7DCDEF475A14ED6F1C418 /* TreeMapPolishTests.swift */,
 				A1B2C3D4E5F60718293A4B5D /* FSItemSizePropagationTests.swift */,
 				5D7A1C3E9B2F40A6817D3E52 /* TreeMapPerformanceTests.swift */,
@@ -736,6 +754,9 @@
 				C74AB5AA1EA81A337C0524FA /* AppsForItem.swift in Sources */,
 				E526153216CF337C89AD16B8 /* FileTypeColors.swift in Sources */,
 				220F3DF24BC7FF1245CB830C /* GlowSelection.swift in Sources */,
+				3B9E7A1C5D4F2860A1C8E5D7 /* FileIcons.swift in Sources */,
+				E27C9A4D1B6F3058C9A2D4E7 /* SidebarView.swift in Sources */,
+				C4A7D1E9B3F85260D7E1A9C3 /* FileOutlineCells.swift in Sources */,
 				C74C3785B1738B02C038181B /* StatusBarView.swift in Sources */,
 				09715578D4A8410794D655B7 /* Theme.swift in Sources */,
 				99D6BD238CED231F67E5305E /* NSString+DIX.swift in Sources */,
@@ -773,6 +794,7 @@
 				99F17B7029B81682DFD9543A /* TMVItem.swift in Sources */,
 				6CEBBE2D33084600CC9B4616 /* TreeMapGlow.swift in Sources */,
 				E69E6BDB2E379FBAB7DAA0DE /* TreeMapPolish.swift in Sources */,
+				7B3E9C2A5D1F4608B2E7A9D1 /* TreeMapLabels.swift in Sources */,
 				050CA122EBD66D4156084AC7 /* TreeMapView.swift in Sources */,
 				9DBAD17CB42ACC457E64701C /* NTTitledInfoPair.swift in Sources */,
 				5987836165E24D534E9363F8 /* NTTitledInfoView.swift in Sources */,
@@ -797,6 +819,8 @@
 				70F3A1D4CEFCD380BBE4BAB2 /* FSItemScanTests.swift in Sources */,
 				7FEC4DA66230B5B56D26C3C7 /* ThemeTests.swift in Sources */,
 				A7D3C1E95B2F4086AC1D7E30 /* TreeMapViewDrawTests.swift in Sources */,
+				6C1E8A3D5B7F4092E4A6C8D1 /* FileIconsTests.swift in Sources */,
+				9E3A5C7D1F2B4068A8C0E2F4 /* TreeMapLabelsTests.swift in Sources */,
 				BA619288688411473B8C676C /* TreeMapPolishTests.swift in Sources */,
 				A1B2C3D4E5F60718293A4B5C /* FSItemSizePropagationTests.swift in Sources */,
 				5D7A1C3E9B2F40A6817D3E51 /* TreeMapPerformanceTests.swift in Sources */,
