@@ -296,6 +296,9 @@ extension NSURL {
 
     // MARK: - firmlinks
 
+    // the same firmlinks as plain paths ("/Applications", ...), for callers which don't work with URLs
+    static let firmlinkPaths: Set<String> = Set(firmlinks.compactMap { $0.path })
+
     private static let firmlinks: Set<NSURL> = {
         var set = Set<NSURL>()
         guard let contents = try? String(contentsOfFile: "/usr/share/firmlinks", encoding: .ascii) else {

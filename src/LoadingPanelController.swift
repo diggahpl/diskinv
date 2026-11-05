@@ -4,7 +4,7 @@
 //
 //  Swift port of LoadingPanelController.{h,m}. Owns LoadingPanel.nib and drives
 //  the scan progress panel (either modal or as a sheet), throttling event-loop
-//  pumping to ~5 Hz so it doesn't dominate scan time. Nib owner, so the class
+//  pumping to ~20 Hz. Nib owner, so the class
 //  name, IBOutlets, and the cancel: action are pinned with @objc.
 //
 //  GPL v3
@@ -120,10 +120,10 @@ class LoadingPanelController: NSObject {
     @objc(setMessageText:) func setMessageText(_ msg: String?) { _message = msg }
 
     @objc func runEventLoop() {
-        // only refresh the UI every 0.2s; pumping the event loop more often eats
-        // over half the total scan time
+        // the scan runs on background threads, so pumping the event loop doesn't slow it
+        // down; just don't spend all the time in the UI
         let currentTime = getTime()
-        let pumpEventLoop = _lastEventLoopRun == 0 || subtractTime(currentTime, _lastEventLoopRun) > 0.2
+        let pumpEventLoop = _lastEventLoopRun == 0 || subtractTime(currentTime, _lastEventLoopRun) > 0.05
 
         if let message = _message {
             _loadingTextField.stringValue = message

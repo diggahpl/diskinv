@@ -34,9 +34,8 @@ class FileSystemDoc: NSDocument, FSItemDelegate {
     private var _viewOptions: NSMutableDictionary = NSMutableDictionary.dictionaryWithDefaults()
     private var _kindColors: FileTypeColors?
 
-    //these variables are used during the initial directory scan
+    //used during the initial directory scan
     private var _progressController: LoadingPanelController?
-    private var _directoryStack: NSMutableArray?
 
     //context pointer for the ShareKindColors user-defaults observation
     private static var shareKindColorsContext = 0
@@ -114,7 +113,6 @@ class FileSystemDoc: NSDocument, FSItemDelegate {
             if rootItem.fileURL()?.stillExists() != true {
                 _rootItem = nil
                 _progressController = nil
-                _directoryStack = nil
                 return false
             }
 
@@ -133,13 +131,11 @@ class FileSystemDoc: NSDocument, FSItemDelegate {
             //loading canceled by user
             _progressController = nil
             _rootItem = nil
-            _directoryStack = nil
             return false
         } catch {
             //error
             _progressController = nil
             _rootItem = nil
-            _directoryStack = nil
 
             let alert = NSAlert()
             alert.alertStyle = .informational
@@ -150,8 +146,6 @@ class FileSystemDoc: NSDocument, FSItemDelegate {
 
             return false
         }
-
-        _directoryStack = nil
 
         return true
     }
@@ -690,46 +684,20 @@ class FileSystemDoc: NSDocument, FSItemDelegate {
 
     //MARK: ---------------------- FSItem delegates -----------------------------------
 
-    @objc func fsItemEnteringFolder(_ item: FSItem) -> Bool {
+    //Called by FSItem.loadChildren about 20 times per second while the folders are scanned on background
+    //threads: shows the progress and lets the user cancel the scan.
+    @objc func fsItemScanProgress(_ item: FSItem, currentFolder: FSItem?) -> Bool {
         //if we don't show the progress panel, we don't need to do anything
         guard let progress = _progressController else {
             return true   //true == continue loading
         }
 
-        if _directoryStack == nil {
-            _directoryStack = NSMutableArray(capacity: 20)
+        if let folder = currentFolder {
+            progress.setMessageText(folder.displayPath())
         }
-
-        assert((_directoryStack?.lastObject as? FSItem) === item.parent())
-        _directoryStack?.add(item)
-
-        //we display only folders 4 levels deep and we don't go into packages
-        if (_directoryStack?.count ?? 0) <= 4 {
-            var parentItem = item.parent()
-            while parentItem != nil && !parentItem!.isPackage() {
-                parentItem = parentItem?.parent()
-            }
-
-            if parentItem == nil {
-                progress.setMessageText(item.displayPath())
-            }
-        }
-
         progress.runEventLoop()
 
         return !progress.cancelPressed()
-    }
-
-    @objc func fsItemExittingFolder(_ item: FSItem) -> Bool {
-        //if we don't show the progress panel, we don't need to do anything
-        if _progressController == nil {
-            return true   //true == continue loading
-        }
-
-        assert((_directoryStack?.lastObject as? FSItem) === item)
-        _directoryStack?.removeLastObject()
-
-        return true
     }
 
     @objc func fsItemShouldIgnoreCreatorCode(_ item: FSItem) -> Bool {
