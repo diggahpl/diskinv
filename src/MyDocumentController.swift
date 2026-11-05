@@ -141,12 +141,6 @@ class MyDocumentController: NSDocumentController {
         return true
     }
 
-    @IBAction func gotoHomepage(_ sender: Any?) {
-        if let url = URL(string: "http://www.derlien.com") {
-            NSWorkspace.shared.open(url)
-        }
-    }
-
     // MARK: - app notifications
 
     @objc(applicationWillFinishLaunching:)
