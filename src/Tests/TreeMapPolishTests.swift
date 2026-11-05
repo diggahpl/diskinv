@@ -14,7 +14,7 @@ import Cocoa
 @testable import Disk_Inventory_Xs
 
 // A flat tree: one folder holding files of the given sizes.
-private final class FlatDataSource: NSObject {
+final class FlatDataSource: NSObject {
     let weights: [UInt64]
 
     init(weights: [UInt64]) {

@@ -235,7 +235,12 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
 
             // temporary NSImage wrapping the BitmapRep
             if let image = _cachedContent?.suitableImage(for: self) {
-                image.draw(in: rect, from: rect, operation: .copy, fraction: 1,
+                // The view is flipped, the image is not: its source rect counts from the
+                // bottom edge. Without mirroring it, a repaint of part of the view (a hover
+                // frame) would copy that part from the vertically mirrored place.
+                let source = NSRect(x: rect.minX, y: image.size.height - rect.maxY,
+                                    width: rect.width, height: rect.height)
+                image.draw(in: rect, from: source, operation: .copy, fraction: 1,
                            respectFlipped: true, hints: nil)
             }
 

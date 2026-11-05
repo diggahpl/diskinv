@@ -76,6 +76,7 @@ The app is dark, luminous and glassy: a deep-space canvas, one cyan accent, Liqu
 - Privacy-protected folders (Documents, Desktop, Downloads, ...) are touched up front to trigger the macOS consent dialogs (`NSFileManager-Extensions.swift`).
 - `NSDrawer` (kinds and selection drawers) is deprecated but still used.
 - `TMVItem` asks the data source for `isLeaf()` and `weight()` once, in `init` and `refresh(withItem:)`. A change to the tree or to sizes must therefore go through `TreeMapView.reloadData()`, which `TreeMapViewController` already calls on zoom, view option and item changes.
+- `TreeMapView` is flipped, its cache image is not. `draw(_:)` mirrors the source rect when it paints only part of the view (hover frames repaint just one cell); `TreeMapViewDrawTests` pins that.
 - Cushion rendering walks the tree on the main thread (the delegate picks each leaf's color there), then shades the collected leaves concurrently in `TMVCushionRenderer.render(_:inBitmap:)`. That relies on the leaf rects never overlapping.
 
 ## License
