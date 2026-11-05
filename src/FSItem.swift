@@ -61,7 +61,7 @@ enum FSItemError: Error {
     private var _size: NSNumber?
     private var _sizeValue: UInt64 = 0
     private var _kindName: String?
-    private var _childs: NSMutableArray?
+    private var _childs: [FSItem]?
     //non-owning, like the original __unsafe_unretained id
     private unowned(unsafe) var _delegate: AnyObject?
 
@@ -84,7 +84,7 @@ enum FSItemError: Error {
         _type = FileFolderItem
         _fileURL = url
         if url.isDirectory() {
-            _childs = NSMutableArray()
+            _childs = []
         }
         _parent = nil   //we are the root item
     }
@@ -106,14 +106,14 @@ enum FSItemError: Error {
     }
 
     // private designated initializer used by the scanner
-    @objc(initWithURL:parent:setKindString:usePhysicalSize:)
-    init(url: NSURL, parent: FSItem?, setKindString: Bool, usePhysicalSize: Bool) {
+    @objc(initWithURL:parent:setKindString:)
+    init(url: NSURL, parent: FSItem?, setKindString: Bool) {
         super.init()
         _type = FileFolderItem
         _parent = parent   //no retain
 
         if let parent = parent {
-            parent._childs?.add(self)
+            parent._childs?.append(self)
         }
 
         _fileURL = url
@@ -121,13 +121,11 @@ enum FSItemError: Error {
         let isFolder = url.isDirectory()
 
         if !isFolder {
-            if usePhysicalSize {
-                setSizeValue(url.physicalSize().uint64Value)
-            } else {
-                setSizeValue(url.logicalSize().uint64Value)
-            }
+            //The scan always ends with the physical sizes (see loadChildrenAndSetKindStrings), so
+            //reading the logical size here would be wasted work.
+            setSizeValue(url.physicalSize().uint64Value)
         } else {
-            _childs = NSMutableArray()
+            _childs = []
         }
 
         if setKindString {
@@ -144,7 +142,7 @@ enum FSItemError: Error {
     deinit {
         //nil out children's non-owning back-reference before ARC releases _childs
         if let childs = _childs {
-            for case let child as FSItem in childs {
+            for child in childs {
                 child.onParentDealloc()
             }
         }
@@ -314,7 +312,7 @@ enum FSItemError: Error {
     @objc(childEnumerator)
     func childEnumerator() -> NSEnumerator? {
         if !isSpecialItem() {
-            return _childs?.objectEnumerator()
+            return (_childs as NSArray?)?.objectEnumerator()
         } else {
             return nil
         }
@@ -323,7 +321,7 @@ enum FSItemError: Error {
     @objc(childAtIndex:)
     func child(at index: UInt) -> FSItem? {
         if !isSpecialItem() {
-            return _childs?.object(at: Int(index)) as? FSItem
+            return _childs?[Int(index)]
         } else {
             return nil
         }
@@ -342,19 +340,17 @@ enum FSItemError: Error {
     func removeChild(_ child: FSItem, updateParent: Bool) {
         assert(!isSpecialItem(), "removeChild is illegal call for special item")
 
-        guard let childs = _childs else { return }
-        let index = childs.indexOfObjectIdentical(to: child)
-        if index != NSNotFound {
-            let myOldSize = sizeValue()
-            let myNewSize = myOldSize - child.sizeValue()
+        guard let index = _childs?.firstIndex(where: { $0 === child }) else { return }
 
-            setSizeValue(myNewSize)
+        let myOldSize = sizeValue()
+        let myNewSize = myOldSize - child.sizeValue()
 
-            childs.removeObject(at: index)
+        setSizeValue(myNewSize)
 
-            if updateParent && !isRoot() {
-                parent()!.childChanged(self, oldSize: myOldSize, newSize: myNewSize)
-            }
+        _childs?.remove(at: index)
+
+        if updateParent && !isRoot() {
+            parent()!.childChanged(self, oldSize: myOldSize, newSize: myNewSize)
         }
     }
 
@@ -376,13 +372,19 @@ enum FSItemError: Error {
     //inserts the child into the size-sorted child array; does no size bookkeeping
     private func insertSorted(_ child: FSItem) -> Bool {
         guard let childs = _childs else { return false }
-        let insertIndex = childs.index(of: child,
-                                       inSortedRange: NSMakeRange(0, childs.count),
-                                       options: .insertionIndex,
-                                       usingComparator: { (a, b) -> ComparisonResult in
-                                           return (a as! FSItem).compareSizeDescendingly(b as! FSItem)
-                                       })
-        childs.insert(child, at: insertIndex)
+
+        //binary search for the first child which has to follow the new one
+        var low = 0
+        var high = childs.count
+        while low < high {
+            let mid = (low + high) / 2
+            if childs[mid].compareSizeDescendingly(child) == .orderedAscending {
+                low = mid + 1
+            } else {
+                high = mid
+            }
+        }
+        _childs?.insert(child, at: low)
         return true
     }
 
@@ -453,14 +455,11 @@ enum FSItemError: Error {
         case FileFolderItem:
             if isFolder() {
                 if let childs = _childs {
-                    var i = childs.count
-                    while i > 0 {
-                        i -= 1
-                        let child = childs.object(at: i) as! FSItem
+                    for child in childs {
                         child.recalculateSize(usePhysicalSize, updateParent: false)
                         size += child.sizeValue()
                     }
-                    childs.sort(using: #selector(FSItem.compareSizeDescendingly(_:)))
+                    sortChildren()
                 }
             } else {
                 //File
@@ -707,12 +706,9 @@ enum FSItemError: Error {
         //keep childs array sorted. The child's size has already changed while ours has
         //not, so only move the child within the array: removeChild/insertChild would
         //subtract the child's new size from our old one, which can underflow.
-        if let childs = _childs {
-            let index = childs.indexOfObjectIdentical(to: child)
-            if index != NSNotFound {
-                childs.removeObject(at: index)
-                _ = insertSorted(child)
-            }
+        if let index = _childs?.firstIndex(where: { $0 === child }) {
+            _childs?.remove(at: index)
+            _ = insertSorted(child)
         }
 
         setSizeValue(myNewSize)
@@ -724,6 +720,26 @@ enum FSItemError: Error {
 
     //MARK: ----------------- the scanner -----------------------
 
+    //keeps the children ordered by size (descending), see compareSizeDescendingly
+    private func sortChildren() {
+        _childs?.sort(by: { $0.compareSizeDescendingly($1) == .orderedAscending })
+    }
+
+    //Called by the scanner when it leaves this folder: all children are complete by then, so
+    //the folder's size is the sum of their sizes.
+    private func finishFolder() {
+        var size: UInt64 = 0
+        if let childs = _childs {
+            for child in childs {
+                size += child.sizeValue()
+            }
+        }
+        sortChildren()
+        setSizeValue(size)
+    }
+
+    //Note: the scan always yields the physical sizes, whatever usePhysicalSize says (the final
+    //pass of the original Objective-C implementation hard-coded that too).
     func loadChildrenAndSetKindStrings(_ setKindStringsParam: Bool, usePhysicalSize: Bool) throws {
         if !isFolder() {
             return
@@ -737,7 +753,7 @@ enum FSItemError: Error {
             throw FSItemError.loadingCanceled
         }
 
-        _childs = NSMutableArray()
+        _childs = []
 
         //should the kind strings of our childs be set initially? (optimization)
         if setKindStrings && !isRoot() {
@@ -759,15 +775,11 @@ enum FSItemError: Error {
             //.isSymbolicLinkKey,
             .typeIdentifierKey,
             //.localizedTypeDescriptionKey,
-            .fileSizeKey,
-            .totalFileAllocatedSizeKey,
-            .fileSizeKey,
             .totalFileAllocatedSizeKey
         ]
 
         // stack of directories (path to directory currently being scanned)
-        let itemStack = NSMutableArray()
-        itemStack.add(self)
+        var itemStack: [FSItem] = [self]
 
         let selfURL = fileURL()
         let dirEnum = FileManager.default.enumerator(at: selfURL! as URL,
@@ -783,7 +795,6 @@ enum FSItemError: Error {
                                                      })
 
         var lastEnumLevel = 1
-        var lastItemWasDir = false
         var lastDirItem: FSItem? = nil
 
         if let dirEnum = dirEnum {
@@ -797,7 +808,7 @@ enum FSItemError: Error {
 
                     if dirEnum.level > lastEnumLevel {
                         // we have entered a sub directory
-                        itemStack.add(lastDirItem!)
+                        itemStack.append(lastDirItem!)
 
                         //should we cancel the loading?
                         if let d = delegate, d.fsItemEnteringFolder?(lastDirItem!) == false {
@@ -810,45 +821,46 @@ enum FSItemError: Error {
                         // walk n levels up
                         for _ in 0..<levelsWalkedUp {
                             //should we cancel the loading?
-                            if let d = delegate, let last = itemStack.lastObject as? FSItem, d.fsItemExittingFolder?(last) == false {
+                            if let d = delegate, d.fsItemExittingFolder?(itemStack.last!) == false {
                                 throw FSItemError.loadingCanceled
                             }
-                            itemStack.removeLastObject()
+                            itemStack.removeLast().finishFolder()
                         }
                     }
 
                     let currentItem = FSItem(url: currentUrl,
-                                             parent: itemStack.lastObject as? FSItem,
-                                             setKindString: setKindStrings,
-                                             usePhysicalSize: usePhysicalSize)
+                                             parent: itemStack.last,
+                                             setKindString: setKindStrings)
 
-                    if currentUrl.isFirmlink() {
-                        // firmlinks are not followed by NSDirectoryEnumerator, but Apple may
-                        // change that, so we tell the enumerator to not enter the directory
-                        dirEnum.skipDescendants()
-                        try currentItem.loadChildrenAndSetKindStrings(setKindStrings, usePhysicalSize: usePhysicalSize)
-                    } else if currentUrl.isVolume() {
-                        // on 10.15 Beta 7 the mount point /System/Volume/data is followed,
-                        // although this should not be the case according to the docs
-                        dirEnum.skipDescendants()
+                    //files can't be firmlinks or volumes, so don't even ask them (the firmlink test hashes the URL)
+                    let isDir = currentUrl.isDirectory()
+                    if isDir {
+                        if currentUrl.isFirmlink() {
+                            // firmlinks are not followed by NSDirectoryEnumerator, but Apple may
+                            // change that, so we tell the enumerator to not enter the directory
+                            dirEnum.skipDescendants()
+                            try currentItem.loadChildrenAndSetKindStrings(setKindStrings, usePhysicalSize: usePhysicalSize)
+                        } else if currentUrl.isVolume() {
+                            // on 10.15 Beta 7 the mount point /System/Volume/data is followed,
+                            // although this should not be the case according to the docs
+                            dirEnum.skipDescendants()
+                        }
                     }
 
-                    lastItemWasDir = currentUrl.isDirectory()
-                    lastDirItem = lastItemWasDir ? currentItem : nil
+                    lastDirItem = isDir ? currentItem : nil
                     lastEnumLevel = dirEnum.level
                 }
             }
         }
 
         // signal exiting of remaining folders
-        for case let stackItem as FSItem in itemStack.reverseObjectEnumerator() {
+        for stackItem in itemStack.reversed() {
             //should we cancel the loading?
             if let d = delegate, d.fsItemExittingFolder?(stackItem) == false {
                 throw FSItemError.loadingCanceled
             }
+            stackItem.finishFolder()
         }
-
-        recalculateSize(true, updateParent: false)
     }
 
     //MARK: ----------------- pasteboard support -----------------------
