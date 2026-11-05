@@ -4,9 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Platform
 
-Disk Inventory X is a document-based AppKit app written in Swift that visualizes disk space usage with treemaps.
+Disk Inventory Xs is a document-based AppKit app written in Swift that visualizes disk space usage with treemaps.
 
 - Targets macOS 26 (Tahoe) and later, Apple Silicon (arm64) only: `MACOSX_DEPLOYMENT_TARGET = 26.0` and `ARCHS = arm64` in `src/Disk Inventory X.xcodeproj`. There is no macOS 16: Apple went from 15 straight to 26, and the SDK rejects 26-only APIs such as `NSGlassEffectView` under a 16.0 target. Do not add an x86_64 slice or fallbacks for older systems; prefer current APIs (`UTType`, Swift concurrency) over deprecated ones. APIs that exist only in macOS 27 need an `#available(macOS 27, *)` guard.
+- The product is called "Disk Inventory Xs" (the "s" is for Silicon). Every user-visible string, message, help page and doc says "Disk Inventory Xs", never plain "Disk Inventory X"; the localized `MainMenu.nib` titles live in both `designable.nib` and `keyedobjects.nib`, so edit both. Only build artifacts keep the old name: the Xcode project, target, scheme, `.entitlements` file, the `Disk Inventory XTests` target and the bundle id `com.derlien.DiskInventoryX`.
 - No third-party frameworks. The treemap renderer lives in `src/TreeMap/` and is compiled into the app.
 - `treemap/` (the old Objective-C framework project) and `DiskInventoryX/` (an early SwiftUI prototype) are not part of the build.
 

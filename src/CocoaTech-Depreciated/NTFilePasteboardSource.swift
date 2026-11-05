@@ -9,7 +9,7 @@
 //
 //  NTFilePasteboardSource isn't included in the CocoaTech Frameworks any more
 //  (and there is no replacement class either), so it was copied into the
-//  Disk Inventory X project.
+//  Disk Inventory Xs project.
 //
 //  Created by Steve Gehrman on Sun Feb 02 2003.
 //  Copyright (c) 2003 CocoaTech. All rights reserved.

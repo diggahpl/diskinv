@@ -86,7 +86,8 @@ final class AppsForItem: NSObject {
             return false
         }
 
-        let isDIX = appURL.name() == "Disk Inventory X.app"
+        // match by bundle id: the app is called "Disk Inventory Xs.app" now, older copies "Disk Inventory X.app"
+        let isDIX = Bundle.main.bundleIdentifier.map { Bundle(url: appURL as URL)?.bundleIdentifier == $0 } ?? false
         let isFinder = appURL.name() == "Finder.app"
 
         // filter out the Finder (returned for simple folders by LaunchServices)

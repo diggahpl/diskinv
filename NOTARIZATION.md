@@ -29,7 +29,7 @@ and notarize.
 SIGN_IDENTITY="Developer ID Application: Your Name (65J464P6J4)" \
     src/BuildRelease.sh
 
-APP="src/build/Release/Disk Inventory X.app"
+APP="src/build/Release/Disk Inventory Xs.app"
 
 # 2. Zip for notarytool (notarization rejects bare .app bundles).
 ditto -c -k --keepParent "$APP" "DiskInventoryXs.zip"

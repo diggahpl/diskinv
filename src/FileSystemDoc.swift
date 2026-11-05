@@ -1,6 +1,6 @@
 //
 //  FileSystemDoc.swift
-//  Disk Inventory X
+//  Disk Inventory Xs
 //
 //  Swift port of the document class FileSystemDoc (formerly
 //  FileSystemDoc.h/.m). The NSDocument subclass that owns the scanned
@@ -378,7 +378,7 @@ class FileSystemDoc: NSDocument, FSItemDelegate {
         if item == nil {
             //the folder/volume which we are showing doesn't exist anymore!
             let msg = String(format: "\"%@\" does not exist any more.", rootItem()?.displayPath() ?? "")
-            let subMsg = NSLocalizedString("The folder will remain visible in Disk Inventory X, but the files cannot be accessed (e.g. shown in the Finder).", comment: "")
+            let subMsg = NSLocalizedString("The folder will remain visible in Disk Inventory Xs, but the files cannot be accessed (e.g. shown in the Finder).", comment: "")
 
             let missingAlert = NSAlert()
             missingAlert.alertStyle = .informational
@@ -840,7 +840,7 @@ class FileSystemDoc: NSDocument, FSItemDelegate {
             if !defaults.boolForVersionDependantKey(DontShowPrivacyWarningMessage) {
                 let alert = NSAlert()
                 alert.alertStyle = .informational
-                alert.messageText = NSLocalizedString("Some folders which will be scanned contain private files. The access is protected by the macOS privacy protection.\n\nUpon first access macOS will ask whether you allow Disk Inventory X access to these folders and files.\n\nDisk Inventory X does not read any data - just information like file sizes and types are collected.", comment: "")
+                alert.messageText = NSLocalizedString("Some folders which will be scanned contain private files. The access is protected by the macOS privacy protection.\n\nUpon first access macOS will ask whether you allow Disk Inventory Xs access to these folders and files.\n\nDisk Inventory Xs does not read any data - just information like file sizes and types are collected.", comment: "")
                 alert.informativeText = NSLocalizedString("You can change the access settings in the System Preferences (Security/Privacy).", comment: "")
 
                 alert.showsSuppressionButton = true

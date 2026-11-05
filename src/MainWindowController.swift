@@ -468,7 +468,7 @@ class MainWindowController: OAToolbarWindowControllerEx {
             Self.poofEffect(in: view, inRect: cellRect)
             synchronizeWindowTitleWithDocumentName()
         } catch {
-            let msg = String(format: NSLocalizedString("\"%@\" cannot be moved to the trash by Disk Inventory X.", comment: ""),
+            let msg = String(format: NSLocalizedString("\"%@\" cannot be moved to the trash by Disk Inventory Xs.", comment: ""),
                              selectedItem.displayName())
             let failAlert = NSAlert()
             failAlert.alertStyle = .informational

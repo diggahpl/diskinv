@@ -1,6 +1,6 @@
 //
 //  FSItem.swift
-//  Disk Inventory X
+//  Disk Inventory Xs
 //
 //  Swift port of the central model class FSItem: the recursive folder
 //  scanner and tree node. Ported from the original Objective-C

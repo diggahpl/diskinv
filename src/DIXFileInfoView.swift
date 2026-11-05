@@ -1,6 +1,6 @@
 //
 //  DIXFileInfoView.swift
-//  Disk Inventory X
+//  Disk Inventory Xs
 //
 //  Swift port of DIXFileInfoView.{h,m}. Subclass of NTInfoView used in the
 //  inspector panel; overrides infoPairs to show the "raw" file name in the
