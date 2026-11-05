@@ -412,11 +412,13 @@ final class TreeMapPerformanceTests: XCTestCase {
         }
     }
 
+    // Bitmaps up to 120x90 are shaded on the calling thread; the big ones are cut into bands and
+    // shaded concurrently.
     func testCushionRendererMatchesReferenceShader() throws {
         var rng = SeededGenerator(state: 0x5EED)
-        let width = 120, height = 90
 
-        for _ in 0..<300 {
+        for iteration in 0..<310 {
+            let (width, height) = iteration < 300 ? (120, 90) : (900, 700)
             let bitmapA = try XCTUnwrap(NSBitmapImageRep(rgbBitmapWithWidth: width, height: height))
             let bitmapB = try XCTUnwrap(NSBitmapImageRep(rgbBitmapWithWidth: width, height: height))
             memset(bitmapA.bitmapData!, 0x5A, bitmapA.bytesPerRow * height)
@@ -447,6 +449,31 @@ final class TreeMapPerformanceTests: XCTestCase {
             hashA.addRows(of: bitmapA)
             hashB.addRows(of: bitmapB)
             XCTAssertEqual(hashA.value, hashB.value, "rect \(rect)")
+        }
+    }
+
+    // A zero-width cell gives its surface infinite coefficients; a cell that inherits them is
+    // shaded with NaN, which must come out as plain bytes instead of trapping the conversion.
+    func testDegenerateSurfaceDoesNotTrap() throws {
+        let bitmap = try XCTUnwrap(NSBitmapImageRep(rgbBitmapWithWidth: 40, height: 40))
+        memset(bitmap.bitmapData!, 0xAB, bitmap.bytesPerRow * 40)
+
+        let degenerate = TMVCushionRenderer(rect: NSRect(x: 5, y: 5, width: 0, height: 10))
+        degenerate.addRidge(byHeightFactor: 0.5)
+
+        let cushion = TMVCushionRenderer(rect: NSRect(x: 5, y: 5, width: 8, height: 8))
+        cushion.setSurface(degenerate.surface())
+        cushion.addRidge(byHeightFactor: 0.45)
+        cushion.renderCushion(inBitmap: bitmap)
+
+        let pixels = bitmap.bitmapData!
+        for y in 0..<40 {
+            for x in 0..<40 {
+                let expected: UInt8 = (5..<13).contains(x) && (5..<13).contains(y) ? 0 : 0xAB
+                for component in 0..<3 {
+                    XCTAssertEqual(pixels[y * bitmap.bytesPerRow + x * 3 + component], expected, "pixel \(x),\(y)")
+                }
+            }
         }
     }
 
@@ -490,6 +517,7 @@ final class TreeMapPerformanceTests: XCTestCase {
         document.benchmarkRoot = scanRoot
 
         let window = NSWindow(contentRect: .zero, styleMask: [.borderless], backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false      // ARC owns it; the default would release it a second time
         let scale = max(window.backingScaleFactor, 1)
         let view = TreeMapView(frame: NSRect(x: 0, y: 0, width: pixelSize.width / scale,
                                              height: pixelSize.height / scale))
@@ -504,6 +532,10 @@ final class TreeMapPerformanceTests: XCTestCase {
         controller.awakeFromNib()
         defer { window.close() }
 
+        // DIX_BENCH_RUNS lengthens the layout/render/hit test phases (for attaching a profiler)
+        let runs = Int(environment["DIX_BENCH_RUNS"] ?? "") ?? 8
+
+        print("[TMBENCH] phase build")
         var buildRoot: TMVItem!
         let build = measure(runs: 3) {
             buildRoot = TMVItem(dataSource: controller, delegate: controller, renderedItem: nil, treeMapView: view)
@@ -513,7 +545,8 @@ final class TreeMapPerformanceTests: XCTestCase {
         let rectA = NSRect(origin: .zero, size: pixelSize)
         let rectB = NSRect(x: 0, y: 0, width: pixelSize.width - 8, height: pixelSize.height - 4)
         var flip = false
-        let layout = measure(runs: 8) {
+        print("[TMBENCH] phase layout")
+        let layout = measure(runs: runs) {
             root.calcLayout(flip ? rectB : rectA)
             flip.toggle()
         }
@@ -526,13 +559,15 @@ final class TreeMapPerformanceTests: XCTestCase {
 
         let bitmap = try XCTUnwrap(NSBitmapImageRep(rgbBitmapWithWidth: Int(pixelSize.width),
                                                     height: Int(pixelSize.height)))
-        let render = measure(runs: 8) { root.drawCushion(inBitmap: bitmap) }
+        print("[TMBENCH] phase render")
+        let render = measure(runs: runs) { root.drawCushion(inBitmap: bitmap) }
 
         var rng = SeededGenerator(state: 0xB17)
         let points = (0..<200_000).map { _ in
             NSPoint(x: rng.unit() * Double(pixelSize.width), y: rng.unit() * Double(pixelSize.height))
         }
-        let hits = measure(runs: 5) {
+        print("[TMBENCH] phase hit")
+        let hits = measure(runs: max(runs * 5 / 8, 1)) {
             var found = 0
             for point in points where root.hitTest(point) != nil { found += 1 }
             XCTAssertGreaterThan(found, 0)

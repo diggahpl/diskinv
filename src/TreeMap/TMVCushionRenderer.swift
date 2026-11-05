@@ -6,10 +6,12 @@
 //  (Necker-cube) shading parameters and the per-pixel shader that writes into
 //  an NSBitmapImageRep, plus color normalization to a fixed brightness.
 //
-//  The pixel loop is a verbatim translation of the ObjC shader: raw bitmapData
-//  pointer arithmetic (3 bytes/pixel, bytesPerRow stride), all per-pixel math in
-//  Double, the lx/len quirk for Ly, the 2.5/BASE_BRIGHTNESS scaling, and the
-//  clamp/redistribute logic. Validated bit-for-bit against the ObjC build.
+//  The pixel loop is a translation of the ObjC shader: raw bitmapData pointer
+//  arithmetic (3 bytes/pixel, bytesPerRow stride), all per-pixel math in Double,
+//  the lx/len quirk for Ly, the 2.5/BASE_BRIGHTNESS scaling, and the
+//  clamp/redistribute logic. Validated bit-for-bit against the ObjC build, and
+//  since then against the single-threaded loop (TreeMapPerformanceTests). The
+//  cushions of one treemap are shaded concurrently (see render(_:inBitmap:)).
 //
 //  Selectors are pinned with @objc so the existing Swift consumers
 //  (FileTypeColors, TreeMapViewController, the FileKinds controllers) and the
@@ -76,14 +78,34 @@ final class TMVCushionRenderer: NSObject {
         _color
     }
 
+    // Converting a color to sRGB costs far more than the rest of a leaf's bookkeeping,
+    // and all leaves of one file kind hand in the same NSColor instance, so the latest
+    // conversions are remembered. setColor(_:) is only called from the main thread.
+    private final class ColorConversionCache {
+        private static let slotCount = 64
+        private var sources = [NSColor?](repeating: nil, count: ColorConversionCache.slotCount)
+        private var converted = [NSColor?](repeating: nil, count: ColorConversionCache.slotCount)
+
+        func srgbColor(for color: NSColor) -> NSColor {
+            // identify the instance by its address; the slot keeps it alive, so the address stays valid
+            let address = Int(bitPattern: Unmanaged.passUnretained(color).toOpaque())
+            let slot = (address >> 4) & (ColorConversionCache.slotCount - 1)
+            if sources[slot] === color, let cached = converted[slot] {
+                return cached
+            }
+            let result = color.usingColorSpace(.sRGB) ?? color
+            sources[slot] = color
+            converted[slot] = result
+            return result
+        }
+    }
+
+    private static let colorConversions = ColorConversionCache()
+
     @objc(setColor:)
     func setColor(_ newColor: NSColor) {
         // we need the color in the RGB color space
-        var newColor = newColor
-        if let rgbColor = newColor.usingColorSpace(.sRGB) {
-            newColor = rgbColor
-        }
-        _color = newColor
+        _color = TMVCushionRenderer.colorConversions.srgbColor(for: newColor)
     }
 
     @objc
@@ -114,22 +136,124 @@ final class TMVCushionRenderer: NSObject {
 
     @objc(renderCushionInBitmap:)
     func renderCushion(inBitmap bitmap: NSBitmapImageRep) {
-        renderCushionInBitmapGeneric(bitmap)
+        TMVCushionRenderer.render([makeJob()], inBitmap: bitmap)
     }
 
-    @objc(renderCushionInBitmapGeneric:)
-    func renderCushionInBitmapGeneric(_ bitmap: NSBitmapImageRep) {
-        let rect = self.rect()
-        let surface = self.surface()
-        let baseColor = self.color()
+    // MARK: - Shading
 
-        // we're expecting a bitmap which is at least as big as our rectangle,
+    // Everything the shader needs to paint one cushion, as plain values: shading
+    // runs on several threads, so it must not touch the renderer or its NSColor.
+    struct CushionJob {
+        var xStart: Int, xEnd: Int, yStart: Int, yEnd: Int      // pixel rect
+        var s0: Double, s1: Double, s2: Double, s3: Double      // surface: [ax, ay, bx, by]
+        var colR: Double, colG: Double, colB: Double
+    }
+
+    func makeJob() -> CushionJob {
+        let baseColor = color()
+        return CushionJob(xStart: Int(_rect.minX), xEnd: Int(_rect.maxX),
+                          yStart: Int(_rect.minY), yEnd: Int(_rect.maxY),
+                          s0: Double(_surface[0]), s1: Double(_surface[1]),
+                          s2: Double(_surface[2]), s3: Double(_surface[3]),
+                          colR: Double(baseColor.redComponent),
+                          colG: Double(baseColor.greenComponent),
+                          colB: Double(baseColor.blueComponent))
+    }
+
+    // A run of rows of one job; the unit of work handed to a thread.
+    private struct Band {
+        var job: Int32
+        var yStart: Int32
+        var yEnd: Int32
+    }
+
+    // Below this many pixels, waking the worker threads costs more than it saves.
+    private static let parallelPixelThreshold = 1 << 15
+
+    // Shades the cushions into the bitmap. The pixel rects of different cushions
+    // never overlap (the layout tiles the parent rect), so they are shaded
+    // concurrently: big cushions are cut into bands of rows, tiny ones are batched,
+    // and every thread works on chunks of about the same number of pixels.
+    static func render(_ jobs: [CushionJob], inBitmap bitmap: NSBitmapImageRep) {
+        // we're expecting a bitmap which is at least as big as our rectangles,
         // has a 24 Bit color depth in RGB space (3 * 8 bytes) with no alpha channel
-        assert(rect.maxY <= CGFloat(bitmap.pixelsHigh), "_rect exeeds bitmap height")
-        assert(rect.maxX <= CGFloat(bitmap.pixelsWide), "_rect exeeds bitmap width")
         assert(bitmap.bitsPerSample == 8, "expecting bitmap to have 8 bits per RGB component")
         assert(!bitmap.hasAlpha, "not expecting the bitmap to have alpha component")
+        assert(jobs.allSatisfy { $0.yEnd <= bitmap.pixelsHigh }, "_rect exeeds bitmap height")
+        assert(jobs.allSatisfy { $0.xEnd <= bitmap.pixelsWide }, "_rect exeeds bitmap width")
 
+        guard let pixels = bitmap.bitmapData else { return }
+        let bytesPerRow = bitmap.bytesPerRow
+
+        var totalPixels = 0
+        for job in jobs {
+            totalPixels += max(job.xEnd - job.xStart, 0) * max(job.yEnd - job.yStart, 0)
+        }
+        if totalPixels == 0 { return }
+
+        let workers = ProcessInfo.processInfo.activeProcessorCount
+        if workers < 2 || totalPixels < parallelPixelThreshold {
+            for job in jobs {
+                shade(job, yStart: job.yStart, yEnd: job.yEnd, pixels: pixels, bytesPerRow: bytesPerRow)
+            }
+            return
+        }
+
+        // Several chunks per thread, as the performance and efficiency cores differ in speed.
+        let chunkPixels = max(totalPixels / (workers * 8), 1 << 14)
+        var bands: [Band] = []
+        var chunkStarts = [0]       // index in `bands` of the first band of each chunk
+        var pixelsInChunk = 0
+        for (index, job) in jobs.enumerated() {
+            let width = job.xEnd - job.xStart
+            guard width > 0, job.yEnd > job.yStart else { continue }
+            let rowsPerBand = max(chunkPixels / width, 1)
+
+            var y = job.yStart
+            while y < job.yEnd {
+                let bandEnd = min(y + rowsPerBand, job.yEnd)
+                bands.append(Band(job: Int32(index), yStart: Int32(y), yEnd: Int32(bandEnd)))
+                pixelsInChunk += width * (bandEnd - y)
+                if pixelsInChunk >= chunkPixels {
+                    chunkStarts.append(bands.count)
+                    pixelsInChunk = 0
+                }
+                y = bandEnd
+            }
+        }
+        if chunkStarts.last! != bands.count {
+            chunkStarts.append(bands.count)
+        }
+
+        jobs.withUnsafeBufferPointer { jobs in
+            bands.withUnsafeBufferPointer { bands in
+                chunkStarts.withUnsafeBufferPointer { chunkStarts in
+                    DispatchQueue.concurrentPerform(iterations: chunkStarts.count - 1) { chunk in
+                        for bandIndex in chunkStarts[chunk]..<chunkStarts[chunk + 1] {
+                            let band = bands[bandIndex]
+                            shade(jobs[Int(band.job)], yStart: Int(band.yStart), yEnd: Int(band.yEnd),
+                                  pixels: pixels, bytesPerRow: bytesPerRow)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Component (0...1) to byte. A NaN or negative component becomes 0 and anything
+    // above the range becomes 255, so a degenerate surface can't trap the conversion.
+    @inline(__always)
+    private static func byte(from component: Double) -> UInt8 {
+        let scaled = component * 255
+        if !(scaled > 0) { return 0 }
+        return scaled >= 255 ? 255 : UInt8(scaled)
+    }
+
+    // The per-pixel shader for the rows yStart..<yEnd of one cushion. It is the
+    // original loop with the parts that don't depend on the pixel hoisted out, so
+    // every pixel is bit-for-bit what the single-threaded implementation produced.
+    private static func shade(_ job: CushionJob, yStart: Int, yEnd: Int,
+                              pixels: UnsafeMutablePointer<UInt8>, bytesPerRow: Int) {
         // Cushion parameters
         let Ia = 0.15  // ambient light
 
@@ -146,51 +270,42 @@ final class TMVCushionRenderer: NSObject {
         let Ly = lx / len   // BUG (preserved): uses lx, not ly
         let Lz = lz / len
 
-        let colR = Double(baseColor.redComponent)
-        let colG = Double(baseColor.greenComponent)
-        let colB = Double(baseColor.blueComponent)
-
-        guard let pixels = bitmap.bitmapData else { return }
-        let bytesPerRow = bitmap.bytesPerRow
-
-        let s0 = Double(surface[0])
-        let s1 = Double(surface[1])
-        let s2 = Double(surface[2])
-        let s3 = Double(surface[3])
-
-        let yStart = Int(rect.minY)
-        let yEnd = Int(rect.maxY)
-        let xStart = Int(rect.minX)
-        let xEnd = Int(rect.maxX)
+        let brightnessScale = 2.5 / Double(BASE_BRIGHTNESS)
+        let twoS0 = 2 * job.s0
+        let twoS1 = 2 * job.s1
 
         var iy = yStart
         while iy < yEnd {
             let rowStart = pixels + iy * bytesPerRow
-            let ny = -(2 * s1 * (Double(iy) + 0.5) + s3)
+            let ny = -(twoS1 * (Double(iy) + 0.5) + job.s3)
+            let nyLy = ny * Ly
+            let nyny = ny * ny
 
-            var ix = xStart
-            while ix < xEnd {
-                let nx = -(2 * s0 * (Double(ix) + 0.5) + s2)
+            var ix = job.xStart
+            while ix < job.xEnd {
+                let nx = -(twoS0 * (Double(ix) + 0.5) + job.s2)
 
-                let cosa = (nx * Lx + ny * Ly + Lz) / (nx * nx + ny * ny + 1.0).squareRoot()
+                let cosa = (nx * Lx + nyLy + Lz) / (nx * nx + nyny + 1.0).squareRoot()
 
                 var brightness = Is * cosa
                 brightness = brightness < 0 ? Ia : (brightness + Ia)
 
-                assert(brightness <= 1.0, "brightness must be <=1")
+                assert(!(brightness > 1.0), "brightness must be <=1")   // false for NaN, which byte(from:) handles
 
-                brightness *= 2.5 / Double(BASE_BRIGHTNESS)
+                brightness *= brightnessScale
 
-                var red = CGFloat(colR * brightness)
-                var green = CGFloat(colG * brightness)
-                var blue = CGFloat(colB * brightness)
+                var red = CGFloat(job.colR * brightness)
+                var green = CGFloat(job.colG * brightness)
+                var blue = CGFloat(job.colB * brightness)
 
-                TMVCushionRenderer.normalizeColorRed(&red, green: &green, blue: &blue)
+                if red > MAX_RGB_VALUE || green > MAX_RGB_VALUE || blue > MAX_RGB_VALUE {
+                    normalizeColorRed(&red, green: &green, blue: &blue)
+                }
 
                 let pixel = rowStart + (ix * 3)
-                pixel[0] = UInt8(red * 255)
-                pixel[1] = UInt8(green * 255)
-                pixel[2] = UInt8(blue * 255)
+                pixel[0] = byte(from: red)
+                pixel[1] = byte(from: green)
+                pixel[2] = byte(from: blue)
 
                 ix += 1
             }

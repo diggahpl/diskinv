@@ -23,7 +23,7 @@ xcodebuild -project "src/Disk Inventory X.xcodeproj" -configuration Debug
 ./run-tests.sh
 ```
 
-Tests live in `src/Tests/` (XCTest, `@testable import Disk_Inventory_Xs`). `FSItemScanTests` scans a fixture tree that `TestFixtures` generates into the gitignored `TestFixtures/` folder; `FSItemSizePropagationTests` builds its own tree in a temporary directory. A new test file must be added to the `Disk Inventory XTests` target in the Xcode project. Benchmarks: `benchmarkLayoutCalculation` and `benchmarkRendering` in `TreeMapView.swift`.
+Tests live in `src/Tests/` (XCTest, `@testable import Disk_Inventory_Xs`). `FSItemScanTests` scans a fixture tree that `TestFixtures` generates into the gitignored `TestFixtures/` folder; `FSItemSizePropagationTests` builds its own tree in a temporary directory. A new test file must be added to the `Disk Inventory XTests` target in the Xcode project. `TreeMapPerformanceTests` pins the treemap layout, hit-test results and every rendered pixel of a seeded synthetic tree to hashes recorded from the original single-threaded implementation, so any change to the layout or the shader that alters a pixel fails it. Its `testBenchmarkRealFolder` times tree build, layout, rendering and hit testing on a scan of `/Applications` (or `DIX_BENCH_PATH`) at 3000x1800 and only runs when asked, in a Release build: `TEST_RUNNER_DIX_TREEMAP_BENCH=1 xcodebuild test -configuration Release ...` (add `-only-testing:"Disk Inventory XTests/TreeMapPerformanceTests"`). The in-app benchmarks are `benchmarkLayoutCalculation` and `benchmarkRendering` in `TreeMapView.swift`.
 
 ## Architecture Overview
 
@@ -62,6 +62,8 @@ Components communicate through `NotificationCenter`:
 - The scan runs on the main thread and keeps the UI alive by pumping a modal session from `LoadingPanelController.runEventLoop()`.
 - Privacy-protected folders (Documents, Desktop, Downloads, ...) are touched up front to trigger the macOS consent dialogs (`NSFileManager-Extensions.swift`).
 - `NSDrawer` (kinds and selection drawers) is deprecated but still used.
+- `TMVItem` asks the data source for `isLeaf()` and `weight()` once, in `init` and `refresh(withItem:)`. A change to the tree or to sizes must therefore go through `TreeMapView.reloadData()`, which `TreeMapViewController` already calls on zoom, view option and item changes.
+- Cushion rendering walks the tree on the main thread (the delegate picks each leaf's color there), then shades the collected leaves concurrently in `TMVCushionRenderer.render(_:inBitmap:)`. That relies on the leaf rects never overlapping.
 
 ## License
 

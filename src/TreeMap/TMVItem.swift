@@ -18,16 +18,38 @@ import Cocoa
 
 private let CUSHION_SCALE_FACTOR: Float = 0.9
 
+// The references every item of one tree shares. They are kept weak, but registering
+// a weak reference is expensive (and a tree has hundreds of thousands of items), so
+// the items share one instance instead of holding three weak references each.
+private final class Environment {
+    weak var dataSource: AnyObject?    // tree map view's data source (implements TreeMapViewDataSource)
+    weak var delegate: AnyObject?      // tree map view's delegate (implements TreeMapViewDelegate)
+    weak var view: TreeMapView?        // the tree map view to which the items belong
+
+    init(dataSource: AnyObject?, delegate: AnyObject?, view: TreeMapView?) {
+        self.dataSource = dataSource
+        self.delegate = delegate
+        self.view = view
+    }
+}
+
+// What a drawing pass needs from the environment, resolved once instead of once per leaf.
+private struct CushionPass {
+    let minimumSize: NSSize?
+    let view: TreeMapView?
+    let willDisplayDelegate: TreeMapViewDelegate?   // the delegate, if it wants to know about each leaf
+}
+
 // holds display information about one cell in the treemap
 @objc(TMVItem)
 final class TMVItem: NSObject {
 
-    private weak var _dataSource: AnyObject?  // tree map view's data source (implements TreeMapViewDataSource)
-    private weak var _delegate: AnyObject?    // tree map view's delegate (implements TreeMapViewDelegate)
+    private let _environment: Environment
     private var _item: Any?                    // the data item represented by this tree map item
-    private weak var _view: TreeMapView?       // the tree map view to which this item belongs
 
     private var _rect: NSRect = .zero          // cell rect (in backing coordinates of the tree map view)
+    private var _isLeaf = true                 // cached data source answers, see reloadNodeProperties()
+    private var _weight: UInt64 = 0
     private var _childRenderers: [TMVItem]?
     private let _cushionRenderer: TMVCushionRenderer
 
@@ -36,16 +58,22 @@ final class TMVItem: NSObject {
     private static let highlightGridColor: NSColor = .yellow
 
     @objc(initWithDataSource:delegate:renderedItem:treeMapView:)
-    init(dataSource: Any?, delegate: Any?, renderedItem item: Any?, treeMapView view: Any?) {
+    convenience init(dataSource: Any?, delegate: Any?, renderedItem item: Any?, treeMapView view: Any?) {
+        self.init(environment: Environment(dataSource: dataSource as AnyObject?,
+                                           delegate: delegate as AnyObject?,
+                                           view: view as? TreeMapView),
+                  renderedItem: item)
+    }
+
+    private init(environment: Environment, renderedItem item: Any?) {
         _item = item
-        _dataSource = dataSource as AnyObject?
-        _delegate = delegate as AnyObject?
-        _view = view as? TreeMapView
+        _environment = environment
         _rect = .zero
         _cushionRenderer = TMVCushionRenderer()
         super.init()
 
-        if !isLeaf() {
+        reloadNodeProperties()
+        if !_isLeaf {
             createChildRenderers()
         }
     }
@@ -56,7 +84,8 @@ final class TMVItem: NSObject {
         _rect = .zero
         _cushionRenderer.setRect(.zero)
 
-        if !isLeaf() {
+        reloadNodeProperties()
+        if !_isLeaf {
             createChildRenderers()
         } else {
             _childRenderers = nil
@@ -74,6 +103,17 @@ final class TMVItem: NSObject {
 
     @objc(calcLayout:)
     func calcLayout(_ rect: NSRect) {
+        calcLayout(rect, minimumSize: minimumCellSize())
+    }
+
+    // The smallest rect (in backing coordinates) that is still laid out and drawn: one
+    // point. Converting it goes through the view, so it is done once per layout or
+    // draw pass instead of once per item. nil (no view) means no minimum.
+    private func minimumCellSize() -> NSSize? {
+        _environment.view?.convertSizeToBackingRespectingFlipped(NSSize(width: 1, height: 1))
+    }
+
+    private func calcLayout(_ rect: NSRect, minimumSize: NSSize?) {
         if NSEqualRects(_rect, rect) {
             return
         }
@@ -87,22 +127,20 @@ final class TMVItem: NSObject {
         _cushionRenderer.setRect(rect)
 
         // if the rect is too small, we do nothing
-        if let view = _view {
-            let rectPoints = view.convertRectFromBackingRespectingFlipped(_rect)
-            if rectPoints.height < 1 || rectPoints.width < 1 {
-                return
-            }
+        if let minimumSize = minimumSize,
+           rect.height < minimumSize.height || rect.width < minimumSize.width {
+            return
         }
 
-        if !isLeaf() {
-            layoutChilds()
+        if !_isLeaf {
+            layoutChilds(minimumSize: minimumSize)
         }
     }
 
     @objc
     func drawGrid() {
         if isLeaf() {
-            guard let view = _view else { return }
+            guard let view = _environment.view else { return }
             let rectPoints = view.convertRectFromBackingRespectingFlipped(_rect)
 
             TMVItem.leafGridColor.set()
@@ -116,7 +154,7 @@ final class TMVItem: NSObject {
 
     @objc
     func drawHighlightFrame() {
-        guard let view = _view else { return }
+        guard let view = _environment.view else { return }
         let rectPoints = view.convertRectFromBackingRespectingFlipped(_rect)
 
         // if the rect is too small, we do nothing
@@ -134,9 +172,22 @@ final class TMVItem: NSObject {
         NSBezierPath.defaultLineWidth = oldLineWidth
     }
 
+    // Walks the tree on the calling thread (the delegate is asked for each leaf's
+    // color, and its answer isn't safe to ask from several threads), then shades
+    // all collected leaves concurrently.
     @objc(drawCushionInBitmap:)
     func drawCushion(inBitmap bitmap: NSBitmapImageRep) {
-        drawCushion(inBitmap: bitmap, parentCushion: nil, cushionHeightFactor: 0.5)
+        var willDisplayDelegate: TreeMapViewDelegate?
+        if let delegate = _environment.delegate,
+           delegate.responds(to: #selector(TreeMapViewDelegate.treeMapView(_:willDisplayItem:withRenderer:))) {
+            willDisplayDelegate = unsafeBitCast(delegate, to: TreeMapViewDelegate.self)
+        }
+        let pass = CushionPass(minimumSize: minimumCellSize(), view: _environment.view,
+                               willDisplayDelegate: willDisplayDelegate)
+
+        var cushions: [TMVCushionRenderer.CushionJob] = []
+        collectCushions(parentCushion: nil, cushionHeightFactor: 0.5, pass: pass, into: &cushions)
+        TMVCushionRenderer.render(cushions, inBitmap: bitmap)
     }
 
     // The data source / delegate are informal protocols implemented (via
@@ -145,19 +196,13 @@ final class TMVItem: NSObject {
     // type to get type-checked optional-method dispatch (which internally does
     // respondsToSelector: + objc_msgSend), exactly like the ObjC original.
     private var dataSource: TreeMapViewDataSource? {
-        guard let ds = _dataSource else { return nil }
+        guard let ds = _environment.dataSource else { return nil }
         return unsafeBitCast(ds, to: TreeMapViewDataSource.self)
-    }
-
-    private var delegate: TreeMapViewDelegate? {
-        guard let d = _delegate else { return nil }
-        return unsafeBitCast(d, to: TreeMapViewDelegate.self)
     }
 
     @objc
     func isLeaf() -> Bool {
-        guard let ds = dataSource else { return true }
-        return !(ds.treeMapView!(_view, isNode: _item))
+        _isLeaf
     }
 
     @objc
@@ -167,8 +212,7 @@ final class TMVItem: NSObject {
 
     @objc
     func weight() -> UInt64 {
-        guard let ds = dataSource else { return 0 }
-        return ds.treeMapView!(_view, weightByItem: _item)
+        _weight
     }
 
     @objc
@@ -213,15 +257,16 @@ final class TMVItem: NSObject {
 
     // MARK: - Private
 
-    private func drawCushion(inBitmap bitmap: NSBitmapImageRep,
-                             parentCushion: TMVCushionRenderer?,
-                             cushionHeightFactor heightFactor: Float) {
+    // Accumulates the surface of every visible node down the tree and collects the
+    // finished cushion of every visible leaf, in drawing order.
+    private func collectCushions(parentCushion: TMVCushionRenderer?,
+                                 cushionHeightFactor heightFactor: Float,
+                                 pass: CushionPass,
+                                 into cushions: inout [TMVCushionRenderer.CushionJob]) {
         // if the rect is too small, we do nothing
-        if let view = _view {
-            let rectPoints = view.convertRectFromBackingRespectingFlipped(_rect)
-            if rectPoints.height < 1 || rectPoints.width < 1 {
-                return
-            }
+        if let minimumSize = pass.minimumSize,
+           _rect.height < minimumSize.height || _rect.width < minimumSize.width {
+            return
         }
 
         if let parentCushion = parentCushion {
@@ -229,23 +274,23 @@ final class TMVItem: NSObject {
             _cushionRenderer.addRidge(byHeightFactor: heightFactor)
         }
 
-        if isLeaf() {
-            if let delegate = delegate,
-               (_delegate?.responds(to: #selector(TreeMapViewDelegate.treeMapView(_:willDisplayItem:withRenderer:))) ?? false) {
-                delegate.treeMapView!(_view, willDisplayItem: _item, withRenderer: self)
+        if _isLeaf {
+            if let delegate = pass.willDisplayDelegate {
+                delegate.treeMapView!(pass.view, willDisplayItem: _item, withRenderer: self)
             }
 
-            _cushionRenderer.renderCushion(inBitmap: bitmap)
+            cushions.append(_cushionRenderer.makeJob())
         } else {
             for child in _childRenderers ?? [] {
-                child.drawCushion(inBitmap: bitmap,
-                                  parentCushion: _cushionRenderer,
-                                  cushionHeightFactor: heightFactor * CUSHION_SCALE_FACTOR)
+                child.collectCushions(parentCushion: _cushionRenderer,
+                                      cushionHeightFactor: heightFactor * CUSHION_SCALE_FACTOR,
+                                      pass: pass,
+                                      into: &cushions)
             }
         }
     }
 
-    private func layoutChilds() {
+    private func layoutChilds(minimumSize: NSSize?) {
         guard let childRenderers = _childRenderers else { return }
 
         var rows: [Double] = []              // fraction of total height for each row
@@ -297,7 +342,7 @@ final class TMVItem: NSObject {
                     rcChild.size.height = CGFloat(right - left)
                 }
 
-                childRenderers[childIndex].calcLayout(rcChild)
+                childRenderers[childIndex].calcLayout(rcChild, minimumSize: minimumSize)
 
                 left = right
                 childIndex += 1
@@ -407,9 +452,25 @@ final class TMVItem: NSObject {
         return rowHeight
     }
 
+    // isLeaf() and weight() are asked for many times per item (every layout, every
+    // draw, every mouse move), but the data source answers them through dynamic
+    // dispatch and casts. They only change when the data does, and every data change
+    // goes through init or refresh(withItem:), so they are asked once there.
+    private func reloadNodeProperties() {
+        guard let ds = dataSource else {
+            _isLeaf = true
+            _weight = 0
+            return
+        }
+        let view = _environment.view
+        _isLeaf = !(ds.treeMapView!(view, isNode: _item))
+        _weight = ds.treeMapView!(view, weightByItem: _item)
+    }
+
     private func createChildRenderers() {
         guard let ds = dataSource else { return }
-        let childCount = Int(ds.treeMapView!(_view, numberOfChildrenOfItem: _item))
+        let view = _environment.view
+        let childCount = Int(ds.treeMapView!(view, numberOfChildrenOfItem: _item))
 
         if _childRenderers == nil {
             _childRenderers = []
@@ -426,16 +487,14 @@ final class TMVItem: NSObject {
 
         // init renderers
         for i in 0..<childCount {
-            let childItem = ds.treeMapView!(_view, child: UInt(i), ofItem: _item)
+            let childItem = ds.treeMapView!(view, child: UInt(i), ofItem: _item)
             assert(childItem != nil, "data source returned nil as child item")
 
             if i < existingRendererCount {
                 // recycle existing renderer
                 _childRenderers![i].refresh(withItem: childItem)
             } else {
-                let childRenderer = TMVItem(dataSource: _dataSource, delegate: _delegate,
-                                            renderedItem: childItem, treeMapView: _view)
-                _childRenderers!.append(childRenderer)
+                _childRenderers!.append(TMVItem(environment: _environment, renderedItem: childItem))
             }
         }
     }
