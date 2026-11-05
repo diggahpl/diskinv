@@ -468,8 +468,7 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
             oldImageRep = NSBitmapImageRep.imageRepCompatible(with: self)
             _rootItemRenderer?.calcLayout(viewBounds)
             if let oldImageRep = oldImageRep {
-                TreeMapGlow.fillBackground(oldImageRep)
-                _rootItemRenderer?.drawCushion(inBitmap: oldImageRep)
+                renderContent(into: oldImageRep)
             }
         } else {
             oldImageRep = _cachedContent
@@ -656,16 +655,21 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
             return
         }
         allocContentCache()
-        if let root = _rootItemRenderer, let cache = _cachedContent {
-            root.drawCushion(inBitmap: cache)
+        if let cache = _cachedContent {
+            renderContent(into: cache)
         }
     }
 
     private func allocContentCache() {
         _cachedContent = NSBitmapImageRep.imageRepCompatible(with: self)
-        if let cache = _cachedContent {
-            TreeMapGlow.fillBackground(cache)
-        }
+    }
+
+    // the space background, the cushions, then the glass finish on top of them
+    private func renderContent(into bitmap: NSBitmapImageRep) {
+        TreeMapGlow.fillBackground(bitmap)
+        guard let root = _rootItemRenderer else { return }
+        root.drawCushion(inBitmap: bitmap)
+        TreeMapPolish.polish(bitmap, root: root, edge: Int((window?.backingScaleFactor ?? 1).rounded()))
     }
 
     private func deallocContentCache() {

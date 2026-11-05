@@ -129,6 +129,8 @@ class MainWindowController: OAToolbarWindowControllerEx {
 
     @objc private func accessibilityOptionsChanged(_ notification: Notification) {
         styleBorders()
+        // the cushions' finish (gutters, glints) and the frames depend on the options
+        _treeMapView.invalidateCanvasCache()
         _treeMapView.needsDisplay = true
     }
 

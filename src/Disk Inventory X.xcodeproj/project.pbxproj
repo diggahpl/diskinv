@@ -34,6 +34,7 @@
 		6EB8830E53A30980E6488C2F /* FileKindStatistic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A21FBEA89EA20EA7BA85FE /* FileKindStatistic.swift */; };
 		70F3A1D4CEFCD380BBE4BAB2 /* FSItemScanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBFE2559DC8E30F4BE2D3B44 /* FSItemScanTests.swift */; };
 		7FEC4DA66230B5B56D26C3C7 /* ThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A04F29AA041F3CCA557FA7 /* ThemeTests.swift */; };
+		BA619288688411473B8C676C /* TreeMapPolishTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DD7DCDEF475A14ED6F1C418 /* TreeMapPolishTests.swift */; };
 		A1B2C3D4E5F60718293A4B5C /* FSItemSizePropagationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* FSItemSizePropagationTests.swift */; };
 		78B37DB4F3B5F64264236053 /* FSItemIndexType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E32B771FDFC845773CA59141 /* FSItemIndexType.swift */; };
 		7D12C2BB1B60E917BDA649DD /* FSItem-Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED9066B2687FE020DF4B67F /* FSItem-Utilities.swift */; };
@@ -44,6 +45,7 @@
 		99D6BD238CED231F67E5305E /* NSString+DIX.swift in Sources */ = {isa = PBXBuildFile; fileRef = 910371DEE0676DBED23D2C5D /* NSString+DIX.swift */; };
 		99F17B7029B81682DFD9543A /* TMVItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD83A6BBF628EAFD893F691B /* TMVItem.swift */; };
 		6CEBBE2D33084600CC9B4616 /* TreeMapGlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54DE43A05D017D946EC6F69F /* TreeMapGlow.swift */; };
+		E69E6BDB2E379FBAB7DAA0DE /* TreeMapPolish.swift in Sources */ = {isa = PBXBuildFile; fileRef = 406D21FCD440313874E3CA86 /* TreeMapPolish.swift */; };
 		9D2C5E2041F1C77F43961414 /* FileKindsPopupController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B97F105B53A3491AE4483C08 /* FileKindsPopupController.swift */; };
 		9DBAD17CB42ACC457E64701C /* NTTitledInfoPair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F041B846D215F56FD71B86 /* NTTitledInfoPair.swift */; };
 		A38A5DC9B22A95B97DC718C0 /* NSDictionary+DIX.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCE7DA50E548B4B914FF582F /* NSDictionary+DIX.swift */; };
@@ -167,10 +169,12 @@
 		BB4E73D84F9A5A5072F5FCF9 /* FSItemSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FSItemSupport.swift; sourceTree = "<group>"; };
 		BD83A6BBF628EAFD893F691B /* TMVItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TMVItem.swift; sourceTree = "<group>"; };
 		54DE43A05D017D946EC6F69F /* TreeMapGlow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TreeMapGlow.swift; sourceTree = "<group>"; };
+		406D21FCD440313874E3CA86 /* TreeMapPolish.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TreeMapPolish.swift; sourceTree = "<group>"; };
 		C030D33FA084A8BCA00CAC91 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		C6255670E06006ACD3C209B0 /* DrivesPanelController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DrivesPanelController.swift; sourceTree = "<group>"; };
 		CBFE2559DC8E30F4BE2D3B44 /* FSItemScanTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FSItemScanTests.swift; sourceTree = "<group>"; };
 		C1A04F29AA041F3CCA557FA7 /* ThemeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ThemeTests.swift; sourceTree = "<group>"; };
+		7DD7DCDEF475A14ED6F1C418 /* TreeMapPolishTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TreeMapPolishTests.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B5D /* FSItemSizePropagationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FSItemSizePropagationTests.swift; sourceTree = "<group>"; };
 		CED9066B2687FE020DF4B67F /* FSItem-Utilities.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "FSItem-Utilities.swift"; sourceTree = "<group>"; };
 		D2B23920DF00C35746695256 /* TreeMapView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TreeMapView.swift; sourceTree = "<group>"; };
@@ -276,6 +280,7 @@
 				1517F835F8E6531CD62C1AB9 /* ZoomInfo.swift */,
 				BD83A6BBF628EAFD893F691B /* TMVItem.swift */,
 				54DE43A05D017D946EC6F69F /* TreeMapGlow.swift */,
+				406D21FCD440313874E3CA86 /* TreeMapPolish.swift */,
 				D2B23920DF00C35746695256 /* TreeMapView.swift */,
 			);
 			name = TreeMap;
@@ -416,6 +421,7 @@
 				10DDD98E114047F8AA68692C /* TestFixtures.swift */,
 				CBFE2559DC8E30F4BE2D3B44 /* FSItemScanTests.swift */,
 				C1A04F29AA041F3CCA557FA7 /* ThemeTests.swift */,
+				7DD7DCDEF475A14ED6F1C418 /* TreeMapPolishTests.swift */,
 				A1B2C3D4E5F60718293A4B5D /* FSItemSizePropagationTests.swift */,
 				5D7A1C3E9B2F40A6817D3E52 /* TreeMapPerformanceTests.swift */,
 			);
@@ -770,6 +776,7 @@
 				3398EFE8AE32EA1210AD3520 /* ZoomInfo.swift in Sources */,
 				99F17B7029B81682DFD9543A /* TMVItem.swift in Sources */,
 				6CEBBE2D33084600CC9B4616 /* TreeMapGlow.swift in Sources */,
+				E69E6BDB2E379FBAB7DAA0DE /* TreeMapPolish.swift in Sources */,
 				050CA122EBD66D4156084AC7 /* TreeMapView.swift in Sources */,
 				9DBAD17CB42ACC457E64701C /* NTTitledInfoPair.swift in Sources */,
 				5987836165E24D534E9363F8 /* NTTitledInfoView.swift in Sources */,
@@ -793,6 +800,7 @@
 				DF7F1C4BDD1BF388305A7583 /* TestFixtures.swift in Sources */,
 				70F3A1D4CEFCD380BBE4BAB2 /* FSItemScanTests.swift in Sources */,
 				7FEC4DA66230B5B56D26C3C7 /* ThemeTests.swift in Sources */,
+				BA619288688411473B8C676C /* TreeMapPolishTests.swift in Sources */,
 				A1B2C3D4E5F60718293A4B5C /* FSItemSizePropagationTests.swift in Sources */,
 				5D7A1C3E9B2F40A6817D3E51 /* TreeMapPerformanceTests.swift in Sources */,
 			);
