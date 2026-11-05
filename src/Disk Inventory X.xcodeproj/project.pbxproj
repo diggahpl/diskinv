@@ -33,6 +33,7 @@
 		66BF4C4F15063677EDCD1498 /* FileKindsTableController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A394BDD3823130DB4E66CB14 /* FileKindsTableController.swift */; };
 		6EB8830E53A30980E6488C2F /* FileKindStatistic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65A21FBEA89EA20EA7BA85FE /* FileKindStatistic.swift */; };
 		70F3A1D4CEFCD380BBE4BAB2 /* FSItemScanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBFE2559DC8E30F4BE2D3B44 /* FSItemScanTests.swift */; };
+		A1B2C3D4E5F60718293A4B5C /* FSItemSizePropagationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* FSItemSizePropagationTests.swift */; };
 		78B37DB4F3B5F64264236053 /* FSItemIndexType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E32B771FDFC845773CA59141 /* FSItemIndexType.swift */; };
 		7D12C2BB1B60E917BDA649DD /* FSItem-Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED9066B2687FE020DF4B67F /* FSItem-Utilities.swift */; };
 		7DFA0CE01491BE4C4ADC6CB4 /* FSItemIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08826F8E677C447E8E141C12 /* FSItemIndex.swift */; };
@@ -169,6 +170,7 @@
 		C030D33FA084A8BCA00CAC91 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		C6255670E06006ACD3C209B0 /* DrivesPanelController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DrivesPanelController.swift; sourceTree = "<group>"; };
 		CBFE2559DC8E30F4BE2D3B44 /* FSItemScanTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FSItemScanTests.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5D /* FSItemSizePropagationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FSItemSizePropagationTests.swift; sourceTree = "<group>"; };
 		CED9066B2687FE020DF4B67F /* FSItem-Utilities.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "FSItem-Utilities.swift"; sourceTree = "<group>"; };
 		D2B23920DF00C35746695256 /* TreeMapView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TreeMapView.swift; sourceTree = "<group>"; };
 		D9303FEF3F04D57E6A0398D9 /* NSBitmapImageRep-CreationExtensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NSBitmapImageRep-CreationExtensions.swift"; sourceTree = "<group>"; };
@@ -417,6 +419,7 @@
 			children = (
 				10DDD98E114047F8AA68692C /* TestFixtures.swift */,
 				CBFE2559DC8E30F4BE2D3B44 /* FSItemScanTests.swift */,
+				A1B2C3D4E5F60718293A4B5D /* FSItemSizePropagationTests.swift */,
 			);
 			name = Tests;
 			path = Tests;
@@ -807,6 +810,7 @@
 			files = (
 				DF7F1C4BDD1BF388305A7583 /* TestFixtures.swift in Sources */,
 				70F3A1D4CEFCD380BBE4BAB2 /* FSItemScanTests.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5C /* FSItemSizePropagationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -954,7 +958,7 @@
 				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_IDENTITY = "-";
 				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.derlien.DiskInventoryXTests;
 				PRODUCT_MODULE_NAME = DiskInventoryXTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -973,7 +977,7 @@
 				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_IDENTITY = "-";
 				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.derlien.DiskInventoryXTests;
 				PRODUCT_MODULE_NAME = DiskInventoryXTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1005,7 +1009,7 @@
 				GCC_VERSION = "";
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				MARKETING_VERSION = 2.0.0;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.derlien.DiskInventoryX;
@@ -1039,7 +1043,7 @@
 				GCC_VERSION = "";
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.derlien.DiskInventoryX;
 				PRODUCT_NAME = "Disk Inventory Xs";
@@ -1054,13 +1058,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				ENABLE_TESTABILITY = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 				SHARED_PRECOMPS_DIR = "$(PROJECT_TEMP_DIR)/SharedPrecompiledHeaders";
@@ -1071,11 +1076,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				SDKROOT = macosx;
 				SHARED_PRECOMPS_DIR = "$(PROJECT_TEMP_DIR)/SharedPrecompiledHeaders";
 			};

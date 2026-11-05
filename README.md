@@ -1,6 +1,6 @@
 # Disk Inventory Xs
 
-A macOS app that visualizes disk space usage with treemaps. This is Tjark Derlien's original Objective-C **Disk Inventory X** (1.4b2, 2022) brought forward to run natively on Apple Silicon and clean on modern Xcode / macOS.
+A macOS app that visualizes disk space usage with treemaps. This is Tjark Derlien's original **Disk Inventory X** (1.4b2, 2022), ported to Swift and brought forward to run natively on Apple Silicon and clean on modern Xcode / macOS.
 
 The "s" is for Silicon.
 
@@ -8,7 +8,7 @@ The "s" is for Silicon.
 
 Grab the latest [release](https://github.com/diskinv/diskinv/releases/latest) — `DiskInventoryXs-<version>-arm64.zip`. Unzip, drag `Disk Inventory Xs.app` to `/Applications`, double-click. Releases are notarized and stapled, so no `xattr` workaround or right-click → Open.
 
-Requirements: Apple Silicon Mac, macOS 10.13+.
+Requirements: Apple Silicon Mac, macOS 27 or later.
 
 ## Build from source
 
@@ -16,7 +16,7 @@ Requirements: Apple Silicon Mac, macOS 10.13+.
 src/BuildRelease.sh
 ```
 
-That builds `TreeMapView.framework` from `treemap/`, builds the app, and produces a self-consistent ad-hoc-signed `.app` at `src/build/Release/Disk Inventory Xs.app` that launches locally without further setup.
+That builds the app (the treemap renderer is compiled in) and produces a self-consistent ad-hoc-signed `.app` at `src/build/Release/Disk Inventory Xs.app` that launches locally without further setup.
 
 To produce a signed/notarizable build, point it at a Developer ID identity in your keychain:
 
@@ -28,15 +28,16 @@ See [`NOTARIZATION.md`](NOTARIZATION.md) for the notarytool + stapler recipe use
 
 ## Layout
 
-- `src/` — the Objective-C app (NSDocument-based, AppKit)
-- `treemap/` — the embedded `TreeMapView.framework`
+- `src/` — the Swift app (NSDocument-based, AppKit); the treemap renderer is in `src/TreeMap/`
 - `src/BuildRelease.sh` — single canonical build entry point (re-signs deeply, arm64-only)
+- `run-tests.sh` — runs the unit tests in `src/Tests/`
+- `treemap/` and `DiskInventoryX/` — leftovers of earlier ports (the old Objective-C framework project and an early SwiftUI prototype); not part of the build
 
 Architectural notes live in [`CLAUDE.md`](CLAUDE.md).
 
 ## Disk Inventory Y (Swift rewrite)
 
-A from-scratch SwiftUI rewrite lives in a sibling repository as **Disk Inventory Y**. Same idea, modern stack: `@Observable`, actor-isolated parallel scanning, Canvas-rendered treemap, structured concurrency. Targets macOS 14+. If you want the modern codebase, look there; this repo exists to keep the original Objective-C app alive and shipping.
+A from-scratch SwiftUI rewrite lives in a sibling repository as **Disk Inventory Y**. Same idea, modern stack: `@Observable`, actor-isolated parallel scanning, Canvas-rendered treemap, structured concurrency. Targets macOS 14+. If you want the modern codebase, look there; this repo exists to keep the original app alive and shipping.
 
 ## Credits
 

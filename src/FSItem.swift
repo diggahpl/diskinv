@@ -16,6 +16,7 @@
 
 import Cocoa
 import CoreServices
+import UniformTypeIdentifiers
 
 //MARK: - delegate informal protocol -> @objc protocol
 
@@ -30,6 +31,11 @@ import CoreServices
 //global cache for kind names
 private var g_kindNameDictionary = NSMutableDictionary()
 
+private func isImageUTI(_ uti: String?) -> Bool {
+    guard let uti = uti, let type = UTType(uti) else { return false }
+    return type.conforms(to: .image)
+}
+
 //MARK: - scan errors (replaces the former ObjC NSException-based cancellation)
 
 //Errors thrown by the recursive scanner. Both FSItem and its sole caller
@@ -41,7 +47,10 @@ enum FSItemError: Error {
     case loadingFailed     //error while enumerating files/folders
 }
 
-@objc(FSItem) final class FSItem: NSObject {
+//The ObjC runtime name must not be "FSItem": FSKit.framework (loaded into every app
+//on current systems) defines a class of that name, and two classes with the same
+//name make the runtime warn about "spurious casting failures and mysterious crashes".
+@objc(DIXFSItem) final class FSItem: NSObject {
 
     private var _fileURL: NSURL?
     //only valid for non-root items (non-owning back-reference); the original
@@ -355,21 +364,26 @@ enum FSItemError: Error {
 
         newChild.setParent(self)
 
-        //insert child sorted by size
-        guard let childs = _childs else { return }
-        let insertIndex = childs.index(of: newChild,
-                                       inSortedRange: NSMakeRange(0, childs.count),
-                                       options: .insertionIndex,
-                                       usingComparator: { (a, b) -> ComparisonResult in
-                                           return (a as! FSItem).compareSizeDescendingly(b as! FSItem)
-                                       })
-        childs.insert(newChild, at: insertIndex)
+        guard insertSorted(newChild) else { return }
 
         setSizeValue(sizeValue() + newChild.sizeValue())
 
         if updateParent && !isRoot() {
             parent()!.childChanged(self, oldSize: myOldSize, newSize: sizeValue())
         }
+    }
+
+    //inserts the child into the size-sorted child array; does no size bookkeeping
+    private func insertSorted(_ child: FSItem) -> Bool {
+        guard let childs = _childs else { return false }
+        let insertIndex = childs.index(of: child,
+                                       inSortedRange: NSMakeRange(0, childs.count),
+                                       options: .insertionIndex,
+                                       usingComparator: { (a, b) -> ComparisonResult in
+                                           return (a as! FSItem).compareSizeDescendingly(b as! FSItem)
+                                       })
+        childs.insert(child, at: insertIndex)
+        return true
     }
 
     @objc(replaceChild:withItem:updateParent:)
@@ -520,7 +534,7 @@ enum FSItemError: Error {
             _kindName = g_kindNameDictionary.object(forKey: uti) as? String
 
             if _kindName == nil {
-                _kindName = UTTypeCopyDescription(uti as CFString)?.takeRetainedValue() as String?
+                _kindName = UTType(uti)?.localizedDescription
 
                 //remember kind name for similar files
                 if let kn = _kindName {
@@ -690,9 +704,16 @@ enum FSItemError: Error {
         let myOldSize = sizeValue()
         let myNewSize = myOldSize &- oldSize &+ newSize
 
-        //keep childs array sorted
-        removeChild(child, updateParent: false)
-        insertChild(child, updateParent: false)
+        //keep childs array sorted. The child's size has already changed while ours has
+        //not, so only move the child within the array: removeChild/insertChild would
+        //subtract the child's new size from our old one, which can underflow.
+        if let childs = _childs {
+            let index = childs.indexOfObjectIdentical(to: child)
+            if index != NSNotFound {
+                childs.removeObject(at: index)
+                _ = insertSorted(child)
+            }
+        }
 
         setSizeValue(myNewSize)
 
@@ -843,19 +864,19 @@ enum FSItemError: Error {
 
         let uti = fileURL()?.cachedUTI()
 
-        func testType(_ test: CFString, _ type: NSPasteboard.PasteboardType) {
-            if let uti = uti, uti == (test as String) {
+        func testType(_ test: UTType, _ type: NSPasteboard.PasteboardType) {
+            if let uti = uti, uti == test.identifier {
                 types.append(type)
             }
         }
 
-        testType(kUTTypeRTF, NSPasteboard.PasteboardType.rtf)
-        testType(kUTTypeRTFD, NSPasteboard.PasteboardType.rtfd)
-        testType(kUTTypeHTML, NSPasteboard.PasteboardType.html)
-        testType(kUTTypePDF, NSPasteboard.PasteboardType.pdf)
+        testType(.rtf, NSPasteboard.PasteboardType.rtf)
+        testType(.rtfd, NSPasteboard.PasteboardType.rtfd)
+        testType(.html, NSPasteboard.PasteboardType.html)
+        testType(.pdf, NSPasteboard.PasteboardType.pdf)
 
         // add TIFF if this is an image
-        if let uti = uti, UTTypeConformsTo(uti as CFString, kUTTypeImage) {
+        if isImageUTI(uti) {
             types.append(NSPasteboard.PasteboardType.tiff)
         }
 
@@ -870,9 +891,9 @@ enum FSItemError: Error {
         return type == "NSFilenamesPboardType"
             || type == NSPasteboard.PasteboardType.string.rawValue
             || type == "NSFileContentsPboardType"
-            || (type == NSPasteboard.PasteboardType.tiff.rawValue && uti != nil && UTTypeConformsTo(uti! as CFString, kUTTypeImage))
-            || (type == NSPasteboard.PasteboardType.rtf.rawValue && uti == (kUTTypeRTF as String))
-            || (type == NSPasteboard.PasteboardType.rtfd.rawValue && uti == (kUTTypeFlatRTFD as String))
+            || (type == NSPasteboard.PasteboardType.tiff.rawValue && isImageUTI(uti))
+            || (type == NSPasteboard.PasteboardType.rtf.rawValue && uti == UTType.rtf.identifier)
+            || (type == NSPasteboard.PasteboardType.rtfd.rawValue && uti == UTType.flatRTFD.identifier)
             || (type == NSPasteboard.PasteboardType.html.rawValue && uti == NSPasteboard.PasteboardType.html.rawValue)
             || (type == NSPasteboard.PasteboardType.pdf.rawValue && uti == NSPasteboard.PasteboardType.pdf.rawValue)
     }
@@ -903,11 +924,11 @@ enum FSItemError: Error {
             // write the contents
             pboard.writeFileContents(path)
         } else if type == NSPasteboard.PasteboardType.tiff.rawValue {
-            if uti == (kUTTypeTIFF as String) {
+            if uti == UTType.tiff.identifier {
                 if let data = NSData(contentsOfFile: path) as Data? {
                     pboard.setData(data, forType: .tiff)
                 }
-            } else if let uti = uti, UTTypeConformsTo(uti as CFString, kUTTypeImage) {
+            } else if isImageUTI(uti) {
                 // open the image and return TIFFRepresentation
                 if let image = NSImage(contentsOfFile: url.path ?? ""),
                    let data = image.tiffRepresentation {
@@ -915,21 +936,21 @@ enum FSItemError: Error {
                 }
             }
         } else if type == NSPasteboard.PasteboardType.rtf.rawValue {
-            if uti == (kUTTypeRTF as String), let data = NSData(contentsOfFile: path) as Data? {
+            if uti == UTType.rtf.identifier, let data = NSData(contentsOfFile: path) as Data? {
                 pboard.setData(data, forType: .rtf)
             }
         } else if type == NSPasteboard.PasteboardType.rtfd.rawValue {
-            if uti == (kUTTypeFlatRTFD as String) {
+            if uti == UTType.flatRTFD.identifier {
                 if let tempRTFDData = try? FileWrapper(url: URL(fileURLWithPath: path), options: []) {
                     pboard.setData(tempRTFDData.serializedRepresentation ?? Data(), forType: .rtfd)
                 }
             }
         } else if type == NSPasteboard.PasteboardType.html.rawValue {
-            if uti == (kUTTypeHTML as String), let data = NSData(contentsOfFile: path) as Data? {
+            if uti == UTType.html.identifier, let data = NSData(contentsOfFile: path) as Data? {
                 pboard.setData(data, forType: .html)
             }
         } else if type == NSPasteboard.PasteboardType.pdf.rawValue {
-            if uti == (kUTTypePDF as String), let data = NSData(contentsOfFile: path) as Data? {
+            if uti == UTType.pdf.identifier, let data = NSData(contentsOfFile: path) as Data? {
                 pboard.setData(data, forType: .pdf)
             }
         }

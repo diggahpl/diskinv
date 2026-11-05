@@ -45,7 +45,7 @@ final class FileTypeColors: NSObject {
 
     @objc(colorForItem:)
     func color(forItem item: FSItem) -> NSColor {
-        color(forKind: item.kindName() ?? "")
+        color(forKind: item.kindName())
     }
 
     @objc(colorForKind:)

@@ -19,7 +19,7 @@ final class FileKindStatistic: NSObject {
 
     @objc(initWithItem:)
     init(item: FSItem) {
-        _kindName = item.kindName() ?? ""
+        _kindName = item.kindName()
         _size = item.sizeValue()
         _items = NSMutableSet(object: item)
         super.init()

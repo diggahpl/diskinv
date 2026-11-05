@@ -75,9 +75,7 @@ class DIXToolbarWindowController: NSWindowController, NSToolbarDelegate {
             item.target = self.value(forKeyPath: targetPath) as AnyObject?
         }
 
-        if #available(macOS 10.15, *) {
-            item.isBordered = true
-        }
+        item.isBordered = true
 
         return item
     }

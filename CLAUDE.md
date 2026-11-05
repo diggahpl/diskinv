@@ -2,69 +2,66 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Build Commands
+## Platform
+
+Disk Inventory X is a document-based AppKit app written in Swift that visualizes disk space usage with treemaps.
+
+- Targets macOS 27 and later, Apple Silicon (arm64) only: `MACOSX_DEPLOYMENT_TARGET = 27.0` and `ARCHS = arm64` in `src/Disk Inventory X.xcodeproj`. Do not add an x86_64 slice or fallbacks for older systems; prefer current APIs (`UTType`, Swift concurrency) over deprecated ones.
+- No third-party frameworks. The treemap renderer lives in `src/TreeMap/` and is compiled into the app.
+- `treemap/` (the old Objective-C framework project) and `DiskInventoryX/` (an early SwiftUI prototype) are not part of the build.
+
+## Build and test
 
 ```bash
-# Build release version
-./BuildRelease.sh
+# Release build (arm64, ad-hoc signed): src/build/Release/Disk Inventory Xs.app
+src/BuildRelease.sh
 
-# Or directly with xcodebuild
-xcodebuild -project "Disk Inventory X.xcodeproj" -configuration Release
+# Debug build
+xcodebuild -project "src/Disk Inventory X.xcodeproj" -configuration Debug
 
-# Build debug version
-xcodebuild -project "Disk Inventory X.xcodeproj" -configuration Debug
+# Unit tests (kills a running "Disk Inventory Xs" first, builds ad-hoc without hardened runtime)
+./run-tests.sh
 ```
 
-No test suite exists. Benchmarking is available via `performRenderBenchmark` and `performLayoutBenchmark` methods in MainWindowController.
+Tests live in `src/Tests/` (XCTest, `@testable import Disk_Inventory_Xs`). `FSItemScanTests` scans a fixture tree that `TestFixtures` generates into the gitignored `TestFixtures/` folder; `FSItemSizePropagationTests` builds its own tree in a temporary directory. A new test file must be added to the `Disk Inventory XTests` target in the Xcode project. Benchmarks: `benchmarkLayoutCalculation` and `benchmarkRendering` in `TreeMapView.swift`.
 
 ## Architecture Overview
 
-Disk Inventory X is a macOS Cocoa application (Objective-C) that visualizes disk space usage using treemaps. It follows a document-based architecture with NSDocument/NSDocumentController patterns.
-
 ### Core Data Model
 
-- **FSItem** (`FSItem.h/m`): Hierarchical representation of file system items. Root data structure for the entire scanned directory tree. Handles loading children, size calculation, and pasteboard operations. Uses delegate pattern for customization (e.g., `fsItemEnteringFolder:`, `fsItemShouldIgnoreCreatorCode:`).
-
-- **FileSystemDoc** (`FileSystemDoc.h/m`): NSDocument subclass managing the scanned file system state. Contains the root FSItem, zoom stack for navigation, file kind statistics, and view options. Posts notifications for state changes.
-
-- **FileKindStatistic**: Tracks count and total size of files by kind (e.g., all MP3 files). Defined within FileSystemDoc.h.
+- **FSItem** (`src/FSItem.swift`): tree node and recursive folder scanner. Children are kept sorted by size, and a size change is propagated to the ancestors through `childChanged(_:oldSize:newSize:)`. Customized through the `FSItemDelegate` protocol (`fsItemEnteringFolder`, `fsItemShouldLookIntoPackages`, `fsItemShouldUsePhysicalFileSize`, ...). Its Objective-C runtime name is `DIXFSItem` because FSKit.framework already defines a class named `FSItem`.
+- **FileSystemDoc** (`src/FileSystemDoc.swift`): `NSDocument` subclass holding the root `FSItem`, the zoom stack, the selection, the file kind statistics and the view options. Posts notifications for state changes.
+- **FileKindStatistic** (`src/FileKindStatistic.swift`): count and total size of the files of one kind (for example all MP3 files).
 
 ### Key Notifications
 
-Components communicate via NSNotificationCenter:
-- `GlobalSelectionChangedNotification` - selection changed
-- `ZoomedItemChangedNotification` - user zoomed into/out of folder
-- `FSItemsChangedNotification` - items modified, deleted, or added
-- `ViewOptionChangedNotification` - display options changed
-
-### External Frameworks
-
-Located in project directory:
-- **TreeMapView.framework** - Treemap visualization rendering
-- **OmniAppKit/OmniFoundation/OmniBase** - Omni Group utility frameworks
+Components communicate through `NotificationCenter`:
+- `.GlobalSelectionChanged` - selection changed
+- `.ZoomedItemChanged` - the user zoomed into or out of a folder
+- `.FSItemsChanged` - items were modified, deleted or added
+- `.ViewOptionChanged` - display options changed
 
 ### View Controllers
 
-- `MainWindowController` - Primary window coordination
-- `TreeMapViewController` - Treemap visualization
-- `FilesOutlineViewController` - Left-side file browser
-- `FileKindsTableController` - File kind statistics drawer
-- `SelectionListController` - Selection list drawer
+- `MainWindowController` - primary window coordination
+- `TreeMapViewController` - data source and delegate of the treemap (`src/TreeMap/`)
+- `FilesOutlineViewController` - left-side file browser
+- `FileKindsTableController` - file kind statistics drawer
+- `SelectionListController` - selection list drawer
 
 ## Key Design Patterns
 
-- **Document-based app**: Uses NSDocument lifecycle for per-scan state
-- **Notification-based**: Loose coupling between UI components
-- **Delegate pattern**: FSItem customization without subclassing
+- **Document-based app**: `NSDocument` lifecycle per scan
+- **Notification-based**: loose coupling between UI components
+- **Delegate pattern**: `FSItem` customization without subclassing
 - **Value transformers**: `FileSizeTransformer`, `VolumeNameTransformer` for bindings
 
-## macOS Considerations
+## Things to know
 
-- Minimum deployment: macOS 10.13+
-- 64-bit Intel only
-- Handles privacy-protected folders (Documents, Desktop, Downloads, etc.) with appropriate permission descriptors
-- Dark mode support (10.14+)
-- Retina display support for treemap rendering
+- `NSURL` purges its cached resource values after each run-loop pass, so the scanner copies the values it needs into its own cache (`NSURL-Extensions.swift`).
+- The scan runs on the main thread and keeps the UI alive by pumping a modal session from `LoadingPanelController.runEventLoop()`.
+- Privacy-protected folders (Documents, Desktop, Downloads, ...) are touched up front to trigger the macOS consent dialogs (`NSFileManager-Extensions.swift`).
+- `NSDrawer` (kinds and selection drawers) is deprecated but still used.
 
 ## License
 

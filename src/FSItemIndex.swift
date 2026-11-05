@@ -40,8 +40,8 @@ final class FSItemIndex: NSObject {
 
     @objc(addItem:)
     func add(_ item: FSItem) {
-        let name = (item.displayName() ?? "").lowercased()
-        let path = (item.displayPath() ?? "").lowercased()
+        let name = item.displayName().lowercased()
+        let path = item.displayPath().lowercased()
 
         FSItemIndex.addObject(item, forTerm: name, in: &displayNameIndex)
         FSItemIndex.addObject(item, forTerm: path, in: &displayFolderIndex)

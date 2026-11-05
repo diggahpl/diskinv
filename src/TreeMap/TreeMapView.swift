@@ -105,8 +105,19 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
         // we want to know if we were resized
         nc.addObserver(self, selector: #selector(viewFrameDidChangeNotification(_:)),
                        name: NSView.frameDidChangeNotification, object: self)
+    }
 
-        // these 2 notifications are sent by our window when it gains or looses focus
+    // The key-window notifications are sent by our window when it gains or loses
+    // focus. The view has no window yet in init, so register once it has one
+    // (registering with object: nil would listen to every window of the app).
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+
+        let nc = NotificationCenter.default
+        nc.removeObserver(self, name: NSWindow.didResignKeyNotification, object: nil)
+        nc.removeObserver(self, name: NSWindow.didBecomeKeyNotification, object: nil)
+
+        guard let window = window else { return }
         nc.addObserver(self, selector: #selector(windowDidResignKey(_:)),
                        name: NSWindow.didResignKeyNotification, object: window)
         nc.addObserver(self, selector: #selector(windowDidBecomeKey(_:)),
@@ -539,7 +550,7 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
 
     // we're about to get the input focus, so invalidate the area of the focus rect
     override func becomeFirstResponder() -> Bool {
-        if !super.resignFirstResponder() {
+        if !super.becomeFirstResponder() {
             return false
         }
         setKeyboardFocusRingNeedsDisplay(visibleRect)

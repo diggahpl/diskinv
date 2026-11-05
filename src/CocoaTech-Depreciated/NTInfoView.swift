@@ -88,7 +88,6 @@ class NTInfoView: NSView {
         scrollView.borderType = .noBorder
         scrollView.scrollsDynamically = true
         scrollView.drawsBackground = true
-        scrollView.contentView.copiesOnScroll = true
 
         // set small scrollbars
         scrollView.verticalScroller?.controlSize = .small

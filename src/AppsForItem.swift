@@ -71,7 +71,12 @@ final class AppsForItem: NSObject {
 
     @objc(openItemURL:withAppURL:)
     class func openItem(url itemURL: NSURL, withAppURL appURL: NSURL) {
-        NSWorkspace.shared.openFile(itemURL.path ?? "", withApplication: appURL.path)
+        NSWorkspace.shared.open([itemURL as URL], withApplicationAt: appURL as URL,
+                                configuration: NSWorkspace.OpenConfiguration()) { _, error in
+            if let error = error {
+                NSLog("cannot open '%@': %@", itemURL.path ?? "", error as NSError)
+            }
+        }
     }
 
     // MARK: - private

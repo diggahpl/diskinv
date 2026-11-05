@@ -19,7 +19,7 @@ import Cocoa
 extension NSDictionary {
     @objc(isAllFileKindsItem)
     func isAllFileKindsItem() -> Bool {
-        !(self is FileKindStatistic)
+        true
     }
 }
 

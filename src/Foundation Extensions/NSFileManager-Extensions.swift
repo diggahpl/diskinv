@@ -20,21 +20,11 @@ extension FileManager {
     func localPrivacyProtectedFolders() -> [URL] {
         var protectedURLs: [URL] = []
 
-        let mojave = OperatingSystemVersion(majorVersion: 10, minorVersion: 14, patchVersion: 0)
-        let catalina = OperatingSystemVersion(majorVersion: 10, minorVersion: 15, patchVersion: 0)
-
-        // protection of these folders arrived in 10.14 Mojave
-        guard ProcessInfo.processInfo.isOperatingSystemAtLeast(mojave) else {
-            return protectedURLs
-        }
-
         // folders identified directly by a search-path constant
-        if ProcessInfo.processInfo.isOperatingSystemAtLeast(catalina) {
-            let searchDirs: [SearchPathDirectory] = [.documentDirectory, .desktopDirectory, .downloadsDirectory]
-            for dir in searchDirs {
-                if let dirURL = try? url(for: dir, in: .userDomainMask, appropriateFor: nil, create: false) {
-                    protectedURLs.append(dirURL)
-                }
+        let searchDirs: [SearchPathDirectory] = [.documentDirectory, .desktopDirectory, .downloadsDirectory]
+        for dir in searchDirs {
+            if let dirURL = try? url(for: dir, in: .userDomainMask, appropriateFor: nil, create: false) {
+                protectedURLs.append(dirURL)
             }
         }
 
@@ -55,12 +45,10 @@ extension FileManager {
             }
         }
 
-        // calendars and reminders: ~/Library/Calendars and ~/Library/Reminders (10.15+)
+        // calendars and reminders: ~/Library/Calendars and ~/Library/Reminders
         if let libURL = try? url(for: .libraryDirectory, in: .userDomainMask, appropriateFor: nil, create: false) {
             protectedURLs.append(libURL.appendingPathComponent("Calendars"))
-            if ProcessInfo.processInfo.isOperatingSystemAtLeast(catalina) {
-                protectedURLs.append(libURL.appendingPathComponent("Reminders"))
-            }
+            protectedURLs.append(libURL.appendingPathComponent("Reminders"))
         }
 
         // address book: ~/Library/Application Support/AddressBook

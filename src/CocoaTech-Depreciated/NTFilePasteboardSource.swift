@@ -16,6 +16,7 @@
 //
 
 import Cocoa
+import UniformTypeIdentifiers
 import CoreServices
 
 // Legacy pasteboard type constants whose Swift globals are unavailable; kept as
@@ -101,13 +102,13 @@ class NTFilePasteboardSource: NSObject {
                 pasteTypes.append(type)
             } else if type == .tiff { // we use the icon if not an image, so don't check isImage
                 pasteTypes.append(type)
-            } else if type == .rtf, uti == (kUTTypeRTF as String) {
+            } else if type == .rtf, uti == UTType.rtf.identifier {
                 pasteTypes.append(type)
-            } else if type == .rtfd, uti == (kUTTypeFlatRTFD as String) {
+            } else if type == .rtfd, uti == UTType.flatRTFD.identifier {
                 pasteTypes.append(type)
-            } else if type == .html, uti == (kUTTypeHTML as String) {
+            } else if type == .html, uti == UTType.html.identifier {
                 pasteTypes.append(type)
-            } else if type == .pdf, uti == (kUTTypePDF as String) {
+            } else if type == .pdf, uti == UTType.pdf.identifier {
                 pasteTypes.append(type)
             }
         }
@@ -138,11 +139,11 @@ class NTFilePasteboardSource: NSObject {
             // write the contents
             pboard.writeFileContents(url.path ?? "")
         } else if type == .tiff {
-            if uti == (kUTTypeTIFF as String) {
+            if uti == UTType.tiff.identifier {
                 if let data = NSData(contentsOfFile: url.path ?? "") as Data? {
                     pboard.setData(data, forType: .tiff)
                 }
-            } else if let uti = uti, UTTypeConformsTo(uti as CFString, kUTTypeImage) {
+            } else if let uti = uti, UTType(uti)?.conforms(to: .image) == true {
                 // open the image and return TIFFRepresentation
                 if let image = NSImage(contentsOfFile: url.path ?? ""),
                    let data = image.tiffRepresentation {
@@ -153,21 +154,21 @@ class NTFilePasteboardSource: NSObject {
                 // NTFilePasteBoardSource: providing file icon not implemented (matches original)
             }
         } else if type == .rtf {
-            if uti == (kUTTypeRTF as String), let data = NSData(contentsOfFile: url.path ?? "") as Data? {
+            if uti == UTType.rtf.identifier, let data = NSData(contentsOfFile: url.path ?? "") as Data? {
                 pboard.setData(data, forType: .rtf)
             }
         } else if type == .rtfd {
-            if uti == (kUTTypeFlatRTFD as String) {
+            if uti == UTType.flatRTFD.identifier {
                 if let tempRTFDData = try? FileWrapper(url: url as URL, options: []) {
                     pboard.setData(tempRTFDData.serializedRepresentation ?? Data(), forType: .rtfd)
                 }
             }
         } else if type == .html {
-            if uti == (kUTTypeHTML as String), let data = NSData(contentsOfFile: url.path ?? "") as Data? {
+            if uti == UTType.html.identifier, let data = NSData(contentsOfFile: url.path ?? "") as Data? {
                 pboard.setData(data, forType: .html)
             }
         } else if type == .pdf {
-            if uti == (kUTTypePDF as String), let data = NSData(contentsOfFile: url.path ?? "") as Data? {
+            if uti == UTType.pdf.identifier, let data = NSData(contentsOfFile: url.path ?? "") as Data? {
                 pboard.setData(data, forType: .pdf)
             }
         }

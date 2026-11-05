@@ -96,21 +96,7 @@ class NTTitledInfoView: NSView {
     }
 
     override func draw(_ rect: NSRect) {
-        let viewWindow = self.window
-        var disabledFlush = false
-
-        // disable window flush for speed
-        if let viewWindow = viewWindow, viewWindow.isFlushWindowDisabled {
-            disabledFlush = true
-            viewWindow.disableFlushing()
-        }
-
         doDrawRect(rect)
-
-        // restore
-        if disabledFlush {
-            viewWindow?.enableFlushing()
-        }
     }
 
     // set to resize automatically for the width
@@ -118,26 +104,12 @@ class NTTitledInfoView: NSView {
         if !_inFrameChanged {
             _inFrameChanged = true
 
-            let viewWindow = self.window
-            var disabledFlush = false
-
-            // disable window flush for speed
-            if let viewWindow = viewWindow, viewWindow.isFlushWindowDisabled {
-                disabledFlush = true
-                viewWindow.disableFlushing()
-            }
-
             // first must set a valid frame
             if let scrollView = enclosingScrollView {
                 frame = scrollView.documentVisibleRect
             }
 
             positionViews()
-
-            // restore
-            if disabledFlush {
-                viewWindow?.enableFlushing()
-            }
 
             _inFrameChanged = false
         }
@@ -319,10 +291,7 @@ class NTTitledInfoView: NSView {
         let bounds = self.bounds
         var viewRect = bounds
 
-        var whiteLineColor = NSColor.white.withAlphaComponent(0.7)
-        if #available(macOS 10.14, *) {
-            whiteLineColor = NSColor.separatorColor
-        }
+        let whiteLineColor = NSColor.separatorColor
 
         // draw lines
         for offset in _backgroundLineOffsets {
