@@ -779,10 +779,13 @@ fileprivate struct FSItemFlags: OptionSet {
 
         //without a delegate nobody is interested in the progress, so we can sleep until the scan is done
         let progressInterval: TimeInterval? = (delegate == nil) ? nil : 0.05
-        while !scan.waitUntilFinished(timeout: progressInterval) {
+        while true {
             //should we cancel the loading?
             if delegate?.fsItemScanProgress?(self, currentFolder: scan.currentFolder) == false {
                 scan.cancel()
+            }
+            if scan.waitUntilFinished(timeout: progressInterval) {
+                break
             }
         }
 
@@ -969,7 +972,7 @@ fileprivate final class FSItemKinds {
     private let lock = UnfairLock()
     private var kindNames: [String] = [""]                 //index 0: no kind
     private var kindIndexes: [String: UInt32] = [:]
-    private var kindNameForUTI: [String: String] = [:]      //cache for UTTypeCopyDescription
+    private var kindNameForUTI: [String: String] = [:]      //cache for the description of a UTI
     private var infoForClass: [ItemClass: ItemInfo] = [:]
 
     //The classes are remembered for one scan only; Launch Services may know other types at the next one.
