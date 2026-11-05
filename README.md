@@ -8,7 +8,7 @@ The "s" is for Silicon.
 
 Grab the latest [release](https://github.com/diskinv/diskinv/releases/latest) — `DiskInventoryXs-<version>-arm64.zip`. Unzip, drag `Disk Inventory Xs.app` to `/Applications`, double-click. Releases are notarized and stapled, so no `xattr` workaround or right-click → Open.
 
-Requirements: Apple Silicon Mac, macOS 27 or later.
+Requirements: Apple Silicon Mac, macOS 26 (Tahoe) or later.
 
 ## Build from source
 

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Disk Inventory X is a document-based AppKit app written in Swift that visualizes disk space usage with treemaps.
 
-- Targets macOS 27 and later, Apple Silicon (arm64) only: `MACOSX_DEPLOYMENT_TARGET = 27.0` and `ARCHS = arm64` in `src/Disk Inventory X.xcodeproj`. Do not add an x86_64 slice or fallbacks for older systems; prefer current APIs (`UTType`, Swift concurrency) over deprecated ones.
+- Targets macOS 26 (Tahoe) and later, Apple Silicon (arm64) only: `MACOSX_DEPLOYMENT_TARGET = 26.0` and `ARCHS = arm64` in `src/Disk Inventory X.xcodeproj`. There is no macOS 16: Apple went from 15 straight to 26, and the SDK rejects 26-only APIs such as `NSGlassEffectView` under a 16.0 target. Do not add an x86_64 slice or fallbacks for older systems; prefer current APIs (`UTType`, Swift concurrency) over deprecated ones. APIs that exist only in macOS 27 need an `#available(macOS 27, *)` guard.
 - No third-party frameworks. The treemap renderer lives in `src/TreeMap/` and is compiled into the app.
 - `treemap/` (the old Objective-C framework project) and `DiskInventoryX/` (an early SwiftUI prototype) are not part of the build.
 
