@@ -83,7 +83,6 @@
 		FCCFB349097FA44A009EA2B6 /* GeneralPreferences.tiff in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB338097FA44A009EA2B6 /* GeneralPreferences.tiff */; };
 		FCCFB34A097FA44A009EA2B6 /* FinderCMPreferences.tiff in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB339097FA44A009EA2B6 /* FinderCMPreferences.tiff */; };
 		FCCFB370097FA4C1009EA2B6 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB34D097FA4C1009EA2B6 /* Credits.rtf */; };
-		FCCFB371097FA4C1009EA2B6 /* DonationPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB34F097FA4C1009EA2B6 /* DonationPanel.nib */; };
 		FCCFB37A097FA4C1009EA2B6 /* InfoPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB35E097FA4C1009EA2B6 /* InfoPanel.nib */; };
 		FCCFB37B097FA4C1009EA2B6 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB360097FA4C1009EA2B6 /* InfoPlist.strings */; };
 		FCCFB37C097FA4C1009EA2B6 /* LoadingPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB362097FA4C1009EA2B6 /* LoadingPanel.nib */; };
@@ -188,7 +187,6 @@
 		E93D51EECA2D4EA8A876ED92 /* NSView-BackingCoordsHelpers.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NSView-BackingCoordsHelpers.swift"; sourceTree = "<group>"; };
 		F0FCA6EA81A3E03ED5166592 /* NTInfoView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NTInfoView.swift; sourceTree = "<group>"; };
 		FC2B2B7A277E43D00040ED6C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
-		FC2B2B7B277E43D10040ED6C /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/DonationPanel.nib; sourceTree = "<group>"; };
 		FC2B2B7C277E43D10040ED6C /* en */ = {isa = PBXFileReference; lastKnownFileType = folder; name = en; path = en.lproj/Help; sourceTree = "<group>"; };
 		FC2B2B7D277E43D10040ED6C /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/InfoPanel.nib; sourceTree = "<group>"; };
 		FC2B2B7E277E43D10040ED6C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -201,7 +199,6 @@
 		FC2C2CA0238C802600D04E20 /* memory usage using NSURL.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "memory usage using NSURL.txt"; path = "documentation/memory usage using NSURL.txt"; sourceTree = "<group>"; };
 		FC2C2CA1238C802600D04E20 /* macOS privacy protected folders.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "macOS privacy protected folders.txt"; path = "documentation/macOS privacy protected folders.txt"; sourceTree = "<group>"; };
 		FC2D7D7421FE4ABB004D0614 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Preferences.strings; sourceTree = "<group>"; };
-		FC2D7D7521FE4ABB004D0614 /* de */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = de; path = de.lproj/DonationPanel.nib; sourceTree = "<group>"; };
 		FC2D7D7621FE4ABB004D0614 /* de */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = de; path = de.lproj/InfoPanel.nib; sourceTree = "<group>"; };
 		FC2D7D7721FE4ABB004D0614 /* de */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = de; path = de.lproj/LoadingPanel.nib; sourceTree = "<group>"; };
 		FC2D7D7821FE4ABB004D0614 /* de */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = de; path = de.lproj/MainMenu.nib; sourceTree = "<group>"; };
@@ -214,7 +211,6 @@
 		FC2DB78221AF4E1100F24C1E /* Disk Inventory X.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Disk Inventory X.entitlements"; sourceTree = "<group>"; };
 		FC2E58FE21D3BFDF00F6F03B /* Disk Inventory Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Disk Inventory Icon.png"; sourceTree = "<group>"; };
 		FC42B8652202405A0080570A /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Preferences.strings; sourceTree = "<group>"; };
-		FC42B8662202405A0080570A /* es */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = es; path = es.lproj/DonationPanel.nib; sourceTree = "<group>"; };
 		FC42B8672202405A0080570A /* es */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = es; path = es.lproj/InfoPanel.nib; sourceTree = "<group>"; };
 		FC42B8682202405A0080570A /* es */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = es; path = es.lproj/LoadingPanel.nib; sourceTree = "<group>"; };
 		FC42B8692202405A0080570A /* es */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = es; path = es.lproj/MainMenu.nib; sourceTree = "<group>"; };
@@ -225,7 +221,6 @@
 		FC42B86E2202405A0080570A /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		FC42B86F2202405A0080570A /* es */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es; path = es.lproj/Help; sourceTree = "<group>"; };
 		FCA1D0BD2205FF2D004E9468 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Preferences.strings; sourceTree = "<group>"; };
-		FCA1D0BE2205FF2D004E9468 /* fr */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = fr; path = fr.lproj/DonationPanel.nib; sourceTree = "<group>"; };
 		FCA1D0BF2205FF2D004E9468 /* fr */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = fr; path = fr.lproj/InfoPanel.nib; sourceTree = "<group>"; };
 		FCA1D0C02205FF2D004E9468 /* fr */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = fr; path = fr.lproj/LoadingPanel.nib; sourceTree = "<group>"; };
 		FCA1D0C12205FF2D004E9468 /* fr */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = fr; path = fr.lproj/MainMenu.nib; sourceTree = "<group>"; };
@@ -382,7 +377,6 @@
 				FCFB17B521B876A400E3F8C4 /* Images.xcassets */,
 				FCCFB336097FA44A009EA2B6 /* Preferences */,
 				FCCFB329097FA44A009EA2B6 /* Toolbar */,
-				FCCFB34F097FA4C1009EA2B6 /* DonationPanel.nib */,
 				FCCFB35E097FA4C1009EA2B6 /* InfoPanel.nib */,
 				FCCFB362097FA4C1009EA2B6 /* LoadingPanel.nib */,
 				FCCFB366097FA4C1009EA2B6 /* MainMenu.nib */,
@@ -698,7 +692,6 @@
 				FCCFB349097FA44A009EA2B6 /* GeneralPreferences.tiff in Resources */,
 				FCCFB34A097FA44A009EA2B6 /* FinderCMPreferences.tiff in Resources */,
 				FCCFB370097FA4C1009EA2B6 /* Credits.rtf in Resources */,
-				FCCFB371097FA4C1009EA2B6 /* DonationPanel.nib in Resources */,
 				FCCFB37A097FA4C1009EA2B6 /* InfoPanel.nib in Resources */,
 				FCCFB37B097FA4C1009EA2B6 /* InfoPlist.strings in Resources */,
 				FCCFB37C097FA4C1009EA2B6 /* LoadingPanel.nib in Resources */,
@@ -842,17 +835,6 @@
 				FC2B2B7A277E43D00040ED6C /* en */,
 			);
 			name = Credits.rtf;
-			sourceTree = "<group>";
-		};
-		FCCFB34F097FA4C1009EA2B6 /* DonationPanel.nib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				FC2D7D7521FE4ABB004D0614 /* de */,
-				FC42B8662202405A0080570A /* es */,
-				FCA1D0BE2205FF2D004E9468 /* fr */,
-				FC2B2B7B277E43D10040ED6C /* en */,
-			);
-			name = DonationPanel.nib;
 			sourceTree = "<group>";
 		};
 		FCCFB35E097FA4C1009EA2B6 /* InfoPanel.nib */ = {

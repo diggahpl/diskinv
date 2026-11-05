@@ -25,8 +25,6 @@ import Cocoa
 class MyDocumentController: NSDocumentController {
 
     @IBOutlet private var _zoomStackMenu: NSMenu!
-    @IBOutlet private var _donationPanel: NSPanel!
-    private var _donationPanelNibTopLevelObjects: [Any]?
 
     // MARK: - open panel
 
@@ -149,11 +147,6 @@ class MyDocumentController: NSDocumentController {
         }
     }
 
-    @IBAction func closeDonationPanel(_ sender: Any?) {
-        _donationPanel?.close() //just hides; ownership stays with _donationPanelNibTopLevelObjects
-        _donationPanel = nil
-    }
-
     // MARK: - app notifications
 
     @objc(applicationWillFinishLaunching:)
@@ -170,23 +163,6 @@ class MyDocumentController: NSDocumentController {
     @objc(applicationSupportsSecureRestorableState:)
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         return true
-    }
-
-    @objc(applicationDidFinishLaunching:)
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        //show donate message
-        if !UserDefaults.standard.bool(forKey: DontShowDonationMessage) {
-            var topLevelObjects: NSArray?
-            Bundle.main.loadNibNamed("DonationPanel", owner: self, topLevelObjects: &topLevelObjects)
-            _donationPanelNibTopLevelObjects = topLevelObjects as? [Any]
-
-            //the nib has "release when closed = YES"; turn it off so the panel's
-            //lifetime is governed by _donationPanelNibTopLevelObjects only. Otherwise
-            //closing the panel frees it while the array still holds a stale pointer,
-            //producing a zombie -release crash later on pool drain.
-            _donationPanel?.isReleasedWhenClosed = false
-            _donationPanel?.worksWhenModal = true
-        }
     }
 
     // MARK: - NSMenu delegate
