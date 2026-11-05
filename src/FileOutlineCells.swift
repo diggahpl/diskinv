@@ -184,6 +184,11 @@ final class FlatHeaderView: NSTableHeaderView {
     /// column (the color swatches) keeps an empty title, as its text would be cut off.
     /// The other columns share the width the table gets, the swatches keep theirs.
     static func install(in table: NSTableView) {
+        // thin overlay scrollers: the always-visible kind takes width the columns count on
+        if let scrollView = table.enclosingScrollView {
+            scrollView.scrollerStyle = .overlay
+            scrollView.hasHorizontalScroller = false
+        }
         let oldHeader = table.headerView
         table.headerView = FlatHeaderView(frame: NSRect(x: 0, y: 0, width: oldHeader?.frame.width ?? 100, height: 26))
         for (index, column) in table.tableColumns.enumerated() {
@@ -286,7 +291,8 @@ enum TableColumns {
             fixedWidth += column.width
         }
 
-        let room = scrollView.contentSize.width - fixedWidth - table.intercellSpacing.width * CGFloat(columns.count) - 8
+        // the visible width, which a scroller that appears later takes a share of
+        let room = scrollView.contentView.bounds.width - fixedWidth - table.intercellSpacing.width * CGFloat(columns.count) - 8
         let each = max(room / CGFloat(max(flexible.count, 1)), 70)
         for column in flexible {
             column.width = each

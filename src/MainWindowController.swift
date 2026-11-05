@@ -22,6 +22,7 @@ class MainWindowController: OAToolbarWindowControllerEx {
 
     private let _sidebar = SidebarView(frame: NSRect(x: 0, y: 0, width: 330, height: 400))
     private var _sidebarShown = false
+    private var _infoObservers: [NSObjectProtocol] = []
 
     /// Posted (object: this controller) when the sidebar is shown, hidden or switches its tab.
     static let sidebarDidChangeNotification = NSNotification.Name("MainWindowSidebarDidChange")
@@ -117,12 +118,29 @@ class MainWindowController: OAToolbarWindowControllerEx {
             NotificationCenter.default.post(name: Self.sidebarDidChangeNotification, object: self)
         }
         _sidebar.isHidden = true
+        _sidebar.infoShown = UserDefaults.standard.object(forKey: Self.infoShownKey) as? Bool ?? true
         contentView.addSubview(_sidebar)
+
+        // the card follows the selection and the zoom of this window's document
+        _infoObservers = [NSNotification.Name.GlobalSelectionChanged, NSNotification.Name.ZoomedItemChanged].map { name in
+            NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] notification in
+                guard let self = self, notification.object as AnyObject? === self.fsDocument() else { return }
+                self.updateInfoCard()
+            }
+        }
+        DispatchQueue.main.async { [weak self] in self?.updateInfoCard() }
+    }
+
+    // the selected item, or else the folder the map shows
+    private func updateInfoCard() {
+        guard _sidebar.infoShown, let doc = fsDocument() else { return }
+        _sidebar.infoCard.show(doc.selectedItem() ?? doc.zoomedItem(), document: doc)
     }
 
     // what the sidebar showed when the last window was used: a tab, or nothing (-1); the
     // kinds tab on first launch
     private static let sidebarStateKey = "SidebarPane"
+    private static let infoShownKey = "SidebarInfoShown"
 
     private func restoreSidebar() {
         let stored = UserDefaults.standard.object(forKey: Self.sidebarStateKey) as? Int
@@ -145,15 +163,17 @@ class MainWindowController: OAToolbarWindowControllerEx {
         _sidebar.select(pane)
         _sidebarShown = true
         _sidebar.isHidden = false
-        layoutPanels()
+        layoutPanels(animated: _splitter.window?.isVisible == true)
         rememberSidebar()
         NotificationCenter.default.post(name: Self.sidebarDidChangeNotification, object: self)
     }
 
     func hideSidebar() {
         _sidebarShown = false
-        _sidebar.isHidden = true
-        layoutPanels()
+        // it stays in view until the map has slid over the room it leaves
+        layoutPanels(animated: _splitter.window?.isVisible == true) { [weak self] in
+            if self?._sidebarShown == false { self?._sidebar.isHidden = true }
+        }
         rememberSidebar()
         NotificationCenter.default.post(name: Self.sidebarDidChangeNotification, object: self)
     }
@@ -191,7 +211,7 @@ class MainWindowController: OAToolbarWindowControllerEx {
 
     // The splitter (outline and treemap) and the sidebar fill the content area between the
     // margins and above the status bar; the sidebar takes its width off the splitter.
-    private func layoutPanels() {
+    private func layoutPanels(animated: Bool = false, completion: (() -> Void)? = nil) {
         guard let contentView = _splitter.window?.contentView else { return }
 
         let margin = StatusBarView.margin
@@ -200,11 +220,32 @@ class MainWindowController: OAToolbarWindowControllerEx {
         let panelWidth = SidebarView.width(forContentWidth: contentView.bounds.width)
         let sidebarWidth = _sidebarShown ? panelWidth + margin : 0
 
-        _splitter.frame = NSRect(x: margin, y: bottom,
-                                 width: contentView.bounds.width - 2 * margin - sidebarWidth, height: height)
-        _sidebar.frame = NSRect(x: contentView.bounds.width - margin - panelWidth, y: bottom,
+        let splitterFrame = NSRect(x: margin, y: bottom,
+                                   width: contentView.bounds.width - 2 * margin - sidebarWidth, height: height)
+        // a hidden sidebar waits just outside the window, so it slides in from there
+        let shownFrame = NSRect(x: contentView.bounds.width - margin - panelWidth, y: bottom,
                                 width: panelWidth, height: height)
-        _splitter.adjustSubviews()
+        let sidebarFrame = _sidebarShown ? shownFrame : shownFrame.offsetBy(dx: panelWidth + margin, dy: 0)
+
+        // a sliding sidebar, unless the user asked for less motion
+        if animated, !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
+            NSAnimationContext.runAnimationGroup({ context in
+                context.duration = 0.22
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                _splitter.animator().frame = splitterFrame
+                _sidebar.animator().frame = sidebarFrame
+            }, completionHandler: { [weak self] in
+                self?._splitter.adjustSubviews()
+                // the map is laid out and rendered for its final size once
+                self?._treeMapView.needsDisplay = true
+                completion?()
+            })
+        } else {
+            _splitter.frame = splitterFrame
+            _sidebar.frame = sidebarFrame
+            _splitter.adjustSubviews()
+            completion?()
+        }
     }
 
     private func fillOutlineWidth() {
@@ -244,6 +285,7 @@ class MainWindowController: OAToolbarWindowControllerEx {
 
     deinit {
         NSWorkspace.shared.notificationCenter.removeObserver(self)
+        _infoObservers.forEach { NotificationCenter.default.removeObserver($0) }
     }
 
     // MARK: - menu and toolbar actions
@@ -353,13 +395,18 @@ class MainWindowController: OAToolbarWindowControllerEx {
         window?.contentView?.needsDisplay = true
     }
 
+    // the action keeps its old name: it is wired in the nib, the menu and the toolbar
     @IBAction func showInformationPanel(_ sender: Any?) {
-        guard let infoController = InfoPanelController.shared() else { return }
-        if infoController.panelIsVisible() {
-            infoController.hidePanel()
+        if _sidebarShown && _sidebar.infoShown {
+            _sidebar.infoShown = false
         } else {
-            infoController.showPanel(with: fsDocument()?.selectedItem())
+            _sidebar.infoShown = true
+            if !_sidebarShown {
+                showSidebar(_sidebar.selectedPane)
+            }
         }
+        UserDefaults.standard.set(_sidebar.infoShown, forKey: Self.infoShownKey)
+        updateInfoCard()
     }
 
     @IBAction func showPhysicalSizes(_ sender: Any?) {
@@ -452,7 +499,7 @@ class MainWindowController: OAToolbarWindowControllerEx {
         } else if menuAction == #selector(selectParentItem(_:)) {
             return CommandValidation(isEnabled: selectedItem != nil && selectedItem !== doc?.zoomedItem())
         } else if menuAction == #selector(showInformationPanel(_:)) {
-            return toggle(InfoPanelController.shared()?.panelIsVisible() ?? false, "Hide Information", "Show Information")
+            return toggle(_sidebarShown && _sidebar.infoShown, "Hide Information", "Show Information")
         } else if menuAction == #selector(changeSplitting(_:)) {
             return titleToggle(_splitter.isVertical, "Split Horizontally", "Split Vertically")
         }
@@ -467,20 +514,7 @@ class MainWindowController: OAToolbarWindowControllerEx {
 
     // MARK: - NSWindow delegate
 
-    func windowDidBecomeMain(_ notification: Notification) {
-        if InfoPanelController.shared()?.panelIsVisible() == true {
-            InfoPanelController.shared()?.showPanel(with: fsDocument()?.selectedItem())
-        }
-    }
-
     func windowDidResignMain(_ notification: Notification) {}
-
-    func windowWillClose(_ notification: Notification) {
-        if (notification.object as? NSWindow)?.isMainWindow == true,
-           InfoPanelController.shared()?.panelIsVisible() == true {
-            InfoPanelController.shared()?.showPanel(with: nil)
-        }
-    }
 
     // MARK: - NSMenu delegate (populates the "Open With" submenu)
 

@@ -593,11 +593,6 @@ class FileSystemDoc: NSDocument, FSItemDelegate {
 
         //post notification
         postNotification(name: NSNotification.Name.GlobalSelectionChanged, oldItem: oldSelectedItem, newItem: _selectedItem)
-
-        //keep info panel in sync
-        if InfoPanelController.shared().panelIsVisible() {
-            InfoPanelController.shared().showPanel(with: _selectedItem)
-        }
     }
 
     //The original overrode the deprecated -fileName so the window controller

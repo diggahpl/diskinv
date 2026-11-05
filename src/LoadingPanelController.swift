@@ -71,6 +71,11 @@ class LoadingPanelController: NSObject {
             assertionFailure("couldn't load LoadingPanel.nib")
         }
         _nibTopLevelObjects = topLevelObjects as? [Any]
+
+        // the deep space of the main window, with a quiet message
+        _loadingPanel?.backgroundColor = Theme.spaceRaised
+        _loadingPanel?.titlebarAppearsTransparent = true
+        _loadingTextField?.textColor = NSColor(white: 1, alpha: 0.7)
     }
 
     deinit {

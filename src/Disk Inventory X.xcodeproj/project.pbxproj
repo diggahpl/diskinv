@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		00E61A276D50F5713A1CE34F /* InfoPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947976A510D913EF5220E372 /* InfoPanelController.swift */; };
 		0383E2AA06B2692610D4B9C3 /* NTFilePasteboardSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858D2D141C67702695FB5E29 /* NTFilePasteboardSource.swift */; };
 		050CA122EBD66D4156084AC7 /* TreeMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B23920DF00C35746695256 /* TreeMapView.swift */; };
 		0A5107CEF5C4C811F45DFE6F /* NSBitmapImageRep-CreationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9303FEF3F04D57E6A0398D9 /* NSBitmapImageRep-CreationExtensions.swift */; };
@@ -68,6 +67,7 @@
 		E526153216CF337C89AD16B8 /* FileTypeColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85C3BB9BCC1F32AEEE06510E /* FileTypeColors.swift */; };
 		220F3DF24BC7FF1245CB830C /* GlowSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6456AF5339858A36F07652D8 /* GlowSelection.swift */; };
 		3B9E7A1C5D4F2860A1C8E5D7 /* FileIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2F6B0A9C7E4513F2A6B8D1 /* FileIcons.swift */; };
+		2D7F9B1E3A5C4086B9D1F3A5 /* InfoCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4C6E8B0D2F41397C5E7A9B1 /* InfoCardView.swift */; };
 		E27C9A4D1B6F3058C9A2D4E7 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A9D1C7E3B5F2086D1E8A3C5 /* SidebarView.swift */; };
 		C4A7D1E9B3F85260D7E1A9C3 /* FileOutlineCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F8B3D5E7A9C2064B8D3F5A7 /* FileOutlineCells.swift */; };
 		C74C3785B1738B02C038181B /* StatusBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E01570DF39F1C7FB2F91E9 /* StatusBarView.swift */; };
@@ -89,7 +89,6 @@
 		FCCFB349097FA44A009EA2B6 /* GeneralPreferences.tiff in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB338097FA44A009EA2B6 /* GeneralPreferences.tiff */; };
 		FCCFB34A097FA44A009EA2B6 /* FinderCMPreferences.tiff in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB339097FA44A009EA2B6 /* FinderCMPreferences.tiff */; };
 		FCCFB370097FA4C1009EA2B6 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB34D097FA4C1009EA2B6 /* Credits.rtf */; };
-		FCCFB37A097FA4C1009EA2B6 /* InfoPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB35E097FA4C1009EA2B6 /* InfoPanel.nib */; };
 		FCCFB37B097FA4C1009EA2B6 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB360097FA4C1009EA2B6 /* InfoPlist.strings */; };
 		FCCFB37C097FA4C1009EA2B6 /* LoadingPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB362097FA4C1009EA2B6 /* LoadingPanel.nib */; };
 		FCCFB37D097FA4C1009EA2B6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB364097FA4C1009EA2B6 /* Localizable.strings */; };
@@ -157,6 +156,7 @@
 		85C3BB9BCC1F32AEEE06510E /* FileTypeColors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileTypeColors.swift; sourceTree = "<group>"; };
 		6456AF5339858A36F07652D8 /* GlowSelection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GlowSelection.swift; sourceTree = "<group>"; };
 		8D2F6B0A9C7E4513F2A6B8D1 /* FileIcons.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileIcons.swift; sourceTree = "<group>"; };
+		A4C6E8B0D2F41397C5E7A9B1 /* InfoCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InfoCardView.swift; sourceTree = "<group>"; };
 		4A9D1C7E3B5F2086D1E8A3C5 /* SidebarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		1F8B3D5E7A9C2064B8D3F5A7 /* FileOutlineCells.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileOutlineCells.swift; sourceTree = "<group>"; };
 		76E01570DF39F1C7FB2F91E9 /* StatusBarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatusBarView.swift; sourceTree = "<group>"; };
@@ -164,7 +164,6 @@
 		89198A9697C1C62E945AD311 /* FileSystemDocSupport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileSystemDocSupport.swift; sourceTree = "<group>"; };
 		8D15AC370486D014006FF6A4 /* Disk Inventory X.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Disk Inventory X.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		910371DEE0676DBED23D2C5D /* NSString+DIX.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NSString+DIX.swift"; sourceTree = "<group>"; };
-		947976A510D913EF5220E372 /* InfoPanelController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InfoPanelController.swift; sourceTree = "<group>"; };
 		947C93EA4AB5667DCF7FA814 /* DIXOutlineView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DIXOutlineView.swift; sourceTree = "<group>"; };
 		A1B48E81D17E20B8F0085945 /* MyDocumentController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyDocumentController.swift; sourceTree = "<group>"; };
 		A394BDD3823130DB4E66CB14 /* FileKindsTableController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileKindsTableController.swift; sourceTree = "<group>"; };
@@ -200,7 +199,6 @@
 		F0FCA6EA81A3E03ED5166592 /* NTInfoView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NTInfoView.swift; sourceTree = "<group>"; };
 		FC2B2B7A277E43D00040ED6C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
 		FC2B2B7C277E43D10040ED6C /* en */ = {isa = PBXFileReference; lastKnownFileType = folder; name = en; path = en.lproj/Help; sourceTree = "<group>"; };
-		FC2B2B7D277E43D10040ED6C /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/InfoPanel.nib; sourceTree = "<group>"; };
 		FC2B2B7E277E43D10040ED6C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		FC2B2B7F277E43D10040ED6C /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = en.lproj/LoadingPanel.nib; sourceTree = "<group>"; };
 		FC2B2B80277E43D10040ED6C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -211,7 +209,6 @@
 		FC2C2CA0238C802600D04E20 /* memory usage using NSURL.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "memory usage using NSURL.txt"; path = "documentation/memory usage using NSURL.txt"; sourceTree = "<group>"; };
 		FC2C2CA1238C802600D04E20 /* macOS privacy protected folders.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = "macOS privacy protected folders.txt"; path = "documentation/macOS privacy protected folders.txt"; sourceTree = "<group>"; };
 		FC2D7D7421FE4ABB004D0614 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Preferences.strings; sourceTree = "<group>"; };
-		FC2D7D7621FE4ABB004D0614 /* de */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = de; path = de.lproj/InfoPanel.nib; sourceTree = "<group>"; };
 		FC2D7D7721FE4ABB004D0614 /* de */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = de; path = de.lproj/LoadingPanel.nib; sourceTree = "<group>"; };
 		FC2D7D7821FE4ABB004D0614 /* de */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = de; path = de.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		FC2D7D7921FE4ABB004D0614 /* de */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = de; path = de.lproj/TreeMap.nib; sourceTree = "<group>"; };
@@ -223,7 +220,6 @@
 		FC2DB78221AF4E1100F24C1E /* Disk Inventory X.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Disk Inventory X.entitlements"; sourceTree = "<group>"; };
 		FC2E58FE21D3BFDF00F6F03B /* Disk Inventory Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Disk Inventory Icon.png"; sourceTree = "<group>"; };
 		FC42B8652202405A0080570A /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Preferences.strings; sourceTree = "<group>"; };
-		FC42B8672202405A0080570A /* es */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = es; path = es.lproj/InfoPanel.nib; sourceTree = "<group>"; };
 		FC42B8682202405A0080570A /* es */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = es; path = es.lproj/LoadingPanel.nib; sourceTree = "<group>"; };
 		FC42B8692202405A0080570A /* es */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = es; path = es.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		FC42B86A2202405A0080570A /* es */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = es; path = es.lproj/TreeMap.nib; sourceTree = "<group>"; };
@@ -233,7 +229,6 @@
 		FC42B86E2202405A0080570A /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		FC42B86F2202405A0080570A /* es */ = {isa = PBXFileReference; lastKnownFileType = folder; name = es; path = es.lproj/Help; sourceTree = "<group>"; };
 		FCA1D0BD2205FF2D004E9468 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Preferences.strings; sourceTree = "<group>"; };
-		FCA1D0BF2205FF2D004E9468 /* fr */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = fr; path = fr.lproj/InfoPanel.nib; sourceTree = "<group>"; };
 		FCA1D0C02205FF2D004E9468 /* fr */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = fr; path = fr.lproj/LoadingPanel.nib; sourceTree = "<group>"; };
 		FCA1D0C12205FF2D004E9468 /* fr */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = fr; path = fr.lproj/MainMenu.nib; sourceTree = "<group>"; };
 		FCA1D0C22205FF2D004E9468 /* fr */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = fr; path = fr.lproj/TreeMap.nib; sourceTree = "<group>"; };
@@ -364,6 +359,7 @@
 				85C3BB9BCC1F32AEEE06510E /* FileTypeColors.swift */,
 				6456AF5339858A36F07652D8 /* GlowSelection.swift */,
 				8D2F6B0A9C7E4513F2A6B8D1 /* FileIcons.swift */,
+				A4C6E8B0D2F41397C5E7A9B1 /* InfoCardView.swift */,
 				4A9D1C7E3B5F2086D1E8A3C5 /* SidebarView.swift */,
 				1F8B3D5E7A9C2064B8D3F5A7 /* FileOutlineCells.swift */,
 				76E01570DF39F1C7FB2F91E9 /* StatusBarView.swift */,
@@ -393,7 +389,6 @@
 				FCFB17B521B876A400E3F8C4 /* Images.xcassets */,
 				FCCFB336097FA44A009EA2B6 /* Preferences */,
 				FCCFB329097FA44A009EA2B6 /* Toolbar */,
-				FCCFB35E097FA4C1009EA2B6 /* InfoPanel.nib */,
 				FCCFB362097FA4C1009EA2B6 /* LoadingPanel.nib */,
 				FCCFB366097FA4C1009EA2B6 /* MainMenu.nib */,
 				FCCFB36A097FA4C1009EA2B6 /* TreeMap.nib */,
@@ -508,7 +503,6 @@
 		FCCFB2D4097FA42B009EA2B6 /* InfoPanel */ = {
 			isa = PBXGroup;
 			children = (
-				947976A510D913EF5220E372 /* InfoPanelController.swift */,
 				E7919EA43720ED9B5F3E1FBD /* DIXFileInfoView.swift */,
 			);
 			name = InfoPanel;
@@ -710,7 +704,6 @@
 				FCCFB349097FA44A009EA2B6 /* GeneralPreferences.tiff in Resources */,
 				FCCFB34A097FA44A009EA2B6 /* FinderCMPreferences.tiff in Resources */,
 				FCCFB370097FA4C1009EA2B6 /* Credits.rtf in Resources */,
-				FCCFB37A097FA4C1009EA2B6 /* InfoPanel.nib in Resources */,
 				FCCFB37B097FA4C1009EA2B6 /* InfoPlist.strings in Resources */,
 				FCCFB37C097FA4C1009EA2B6 /* LoadingPanel.nib in Resources */,
 				FCCFB37D097FA4C1009EA2B6 /* Localizable.strings in Resources */,
@@ -755,6 +748,7 @@
 				E526153216CF337C89AD16B8 /* FileTypeColors.swift in Sources */,
 				220F3DF24BC7FF1245CB830C /* GlowSelection.swift in Sources */,
 				3B9E7A1C5D4F2860A1C8E5D7 /* FileIcons.swift in Sources */,
+				2D7F9B1E3A5C4086B9D1F3A5 /* InfoCardView.swift in Sources */,
 				E27C9A4D1B6F3058C9A2D4E7 /* SidebarView.swift in Sources */,
 				C4A7D1E9B3F85260D7E1A9C3 /* FileOutlineCells.swift in Sources */,
 				C74C3785B1738B02C038181B /* StatusBarView.swift in Sources */,
@@ -785,7 +779,6 @@
 				30CC349CE2D7D87136EC0E40 /* SelectionListController.swift in Sources */,
 				66BF4C4F15063677EDCD1498 /* FileKindsTableController.swift in Sources */,
 				3FF8250EC9522139005B8F32 /* SelectionListTableController.swift in Sources */,
-				00E61A276D50F5713A1CE34F /* InfoPanelController.swift in Sources */,
 				FE6EAB992076F520D661A2F9 /* TreeMapViewController.swift in Sources */,
 				5D29A9BD29A3029B79A4EA87 /* NSView-BackingCoordsHelpers.swift in Sources */,
 				0A5107CEF5C4C811F45DFE6F /* NSBitmapImageRep-CreationExtensions.swift in Sources */,
@@ -859,17 +852,6 @@
 				FC2B2B7A277E43D00040ED6C /* en */,
 			);
 			name = Credits.rtf;
-			sourceTree = "<group>";
-		};
-		FCCFB35E097FA4C1009EA2B6 /* InfoPanel.nib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				FC2D7D7621FE4ABB004D0614 /* de */,
-				FC42B8672202405A0080570A /* es */,
-				FCA1D0BF2205FF2D004E9468 /* fr */,
-				FC2B2B7D277E43D10040ED6C /* en */,
-			);
-			name = InfoPanel.nib;
 			sourceTree = "<group>";
 		};
 		FCCFB360097FA4C1009EA2B6 /* InfoPlist.strings */ = {

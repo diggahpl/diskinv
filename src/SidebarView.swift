@@ -31,6 +31,8 @@ final class SidebarView: NSView {
     }
 
     private let tabs = NSSegmentedControl()
+    /// The details of the selected item, under the tabs.
+    let infoCard = InfoCardView(frame: .zero)
     private var contents: [Pane: NSView] = [:]
     private(set) var selectedPane: Pane = .kinds
 
@@ -51,6 +53,15 @@ final class SidebarView: NSView {
         tabs.target = self
         tabs.action = #selector(tabChanged(_:))
         addSubview(tabs)
+        addSubview(infoCard)
+    }
+
+    /// Whether the card is shown under the tabs.
+    var infoShown = true {
+        didSet {
+            infoCard.isHidden = !infoShown
+            needsLayout = true
+        }
     }
 
     required init?(coder: NSCoder) {
@@ -89,7 +100,11 @@ final class SidebarView: NSView {
         tabs.frame = NSRect(x: inset, y: bounds.height - inset - tabsHeight,
                             width: bounds.width - 2 * inset, height: tabsHeight)
 
-        let area = NSRect(x: 0, y: 0, width: bounds.width, height: tabs.frame.minY - 8)
+        // the card takes about two fifths of the height, never less than its list needs
+        let infoHeight: CGFloat = infoShown ? min(max((bounds.height * 0.42).rounded(), 240), 380) : 0
+        infoCard.frame = NSRect(x: 0, y: 0, width: bounds.width, height: infoHeight)
+
+        let area = NSRect(x: 0, y: infoHeight, width: bounds.width, height: max(tabs.frame.minY - 8 - infoHeight, 0))
         for view in contents.values {
             view.frame = area
             fitColumns(in: view)
@@ -100,8 +115,22 @@ final class SidebarView: NSView {
     private func fitColumns(in view: NSView) {
         if let table = view as? NSTableView {
             TableColumns.fit(table)
+            watchWidth(of: table)
         } else {
             view.subviews.forEach(fitColumns)
+        }
+    }
+
+    // a scroller that shows up after the layout narrows what the columns have
+    private var watched: [ObjectIdentifier] = []
+
+    private func watchWidth(of table: NSTableView) {
+        guard let clip = table.enclosingScrollView?.contentView, !watched.contains(ObjectIdentifier(table)) else { return }
+        watched.append(ObjectIdentifier(table))
+        clip.postsFrameChangedNotifications = true
+        NotificationCenter.default.addObserver(forName: NSView.frameDidChangeNotification, object: clip,
+                                               queue: .main) { [weak table] _ in
+            if let table = table { TableColumns.fit(table) }
         }
     }
 }
