@@ -27,6 +27,9 @@ class TreeMapViewController: NSObject {
     private var _otherSpaceItem: FSItem?
     private var _freeSpaceItem: FSItem?
 
+    private var _statusBar: StatusBarView?
+    private var _touchedItem: FSItem?
+
     private static var shareKindColorsContext = 0
 
     override func awakeFromNib() {
@@ -44,6 +47,10 @@ class TreeMapViewController: NSObject {
 
         _fileNameTextField?.stringValue = ""
         _fileSizeTextField?.stringValue = ""
+
+        if let contentView = _treeMapView?.window?.contentView, let name = _fileNameTextField, let size = _fileSizeTextField {
+            _statusBar = StatusBarView.install(in: contentView, nameField: name, detailField: size)
+        }
 
         doc?.addObserver(self, forKeyPath: DocKeySelectedItem, options: .new, context: nil)
         NSUserDefaultsController.shared.addObserver(self, forKeyPath: "values." + ShareKindColors,
@@ -128,9 +135,9 @@ class TreeMapViewController: NSObject {
         if type == FileFolderItem {
             color = fsItem.flatMap { document()?.fileTypeColors().color(forItem: $0) }
         } else if type == FreeSpaceItem {
-            color = TMVCushionRenderer.normalize(NSColor(calibratedWhite: 1, alpha: 1))
+            color = Theme.freeSpace
         } else if type == OtherSpaceItem {
-            color = TMVCushionRenderer.normalize(NSColor(calibratedRed: 0.2, green: 0.2, blue: 0.2, alpha: 1))
+            color = Theme.otherSpace
         }
 
         renderer.setCushionColor(color)
@@ -154,25 +161,8 @@ class TreeMapViewController: NSObject {
     // MARK: - TreeMapView notifications (auto-registered by the view via respondsToSelector)
 
     @objc func treeMapViewItemTouched(_ notification: Notification!) {
-        let fsItem = notification.userInfo?[TMVTouchedItem] as? FSItem
-
-        guard let fsItem = fsItem else {
-            _fileNameTextField.stringValue = ""
-            _fileSizeTextField.stringValue = ""
-            return
-        }
-
-        var displayName = fsItem.displayName()
-        let sizeFormatter = FileSizeFormatter()
-        let size = sizeFormatter.string(for: fsItem.size()) ?? ""
-
-        if !fsItem.isSpecialItem() {
-            displayName += " (\(fsItem.displayFolderName()))"
-            _fileSizeTextField.stringValue = "\(fsItem.kindName()), \(size)"
-        } else {
-            _fileSizeTextField.stringValue = size
-        }
-        _fileNameTextField.stringValue = displayName
+        _touchedItem = notification.userInfo?[TMVTouchedItem] as? FSItem
+        showReadout()
     }
 
     @objc func treeMapViewSelectionDidChange(_ notification: Notification!) {
@@ -183,6 +173,7 @@ class TreeMapViewController: NSObject {
         if doc?.selectedItem() !== item, !(item?.isSpecialItem() ?? false) {
             doc?.setSelectedItem(item)
         }
+        showReadout()
     }
 
     // MARK: - document notifications
@@ -244,6 +235,43 @@ class TreeMapViewController: NSObject {
 
     // MARK: - private
 
+    // The status bar shows the item under the pointer, or else the selected one.
+    private func showReadout() {
+        guard let fsItem = _touchedItem ?? (_treeMapView.selectedItem() as? FSItem) else {
+            _fileNameTextField.stringValue = ""
+            _fileSizeTextField.stringValue = ""
+            _statusBar?.setSwatchColor(nil)
+            return
+        }
+
+        var displayName = fsItem.displayName()
+        let size = FileSizeFormatter().string(for: fsItem.size()) ?? ""
+
+        if !fsItem.isSpecialItem() {
+            displayName += " (\(fsItem.displayFolderName()))"
+            _fileSizeTextField.stringValue = "\(fsItem.kindName()), \(size)"
+        } else {
+            _fileSizeTextField.stringValue = size
+        }
+        _fileNameTextField.stringValue = displayName
+
+        _statusBar?.setSwatchColor(swatchColor(for: fsItem))
+    }
+
+    // the item's cushion color, brightened to what the cushion shows on average
+    private func swatchColor(for fsItem: FSItem) -> NSColor? {
+        let type = fsItem.type()
+        let base: NSColor?
+        if type == FileFolderItem {
+            base = document()?.fileTypeColors().color(forItem: fsItem)
+        } else if type == FreeSpaceItem {
+            base = Theme.freeSpace
+        } else {
+            base = Theme.otherSpace
+        }
+        return base.map { Theme.cushionDisplayColor($0) }
+    }
+
     private func onDocumentSelectionChanged() {
         let item = document()?.selectedItem()
         if item === (_treeMapView.selectedItem() as? FSItem) { return }
@@ -256,7 +284,9 @@ class TreeMapViewController: NSObject {
     }
 
     private func reloadData() {
+        _touchedItem = nil
         _treeMapView.reloadData()
         onDocumentSelectionChanged()
+        showReadout()
     }
 }

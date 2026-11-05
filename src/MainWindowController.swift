@@ -67,7 +67,73 @@ class MainWindowController: OAToolbarWindowControllerEx {
             _splitter.isVertical = false
         }
         _splitter.autosaveName = "MainWindowSplitter"
+        applyChrome()
         _kindsDrawer.toggle(self)
+    }
+
+    // MARK: - window chrome
+
+    // The panels float on the deep-space canvas: rounded, hairline-edged, with
+    // the glass status bar (see StatusBarView) underneath.
+    private func applyChrome() {
+        guard let window = _splitter.window, let contentView = window.contentView else { return }
+
+        window.backgroundColor = Theme.space
+
+        // fill the content area between the margins and above the status bar
+        let margin = StatusBarView.margin
+        let bottom = margin + StatusBarView.height + 10
+        _splitter.frame = NSRect(x: margin, y: bottom,
+                                 width: contentView.bounds.width - 2 * margin,
+                                 height: contentView.bounds.height - bottom - margin)
+        _splitter.dividerStyle = .thin
+
+        _filesOutlineView.enclosingScrollView?.borderType = .noBorder
+        styleBorders()
+
+        // the nib's column widths fit a 244 pt table; once the window has its
+        // real size, let the name column take the room the size column leaves
+        DispatchQueue.main.async { [weak self] in self?.fillOutlineWidth() }
+
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(accessibilityOptionsChanged(_:)),
+                                                          name: Theme.accessibilityOptionsChanged, object: nil)
+    }
+
+    private func fillOutlineWidth() {
+        guard let table = _filesOutlineView, let scrollView = table.enclosingScrollView,
+              let nameColumn = table.outlineTableColumn,
+              let sizeColumn = table.tableColumns.last, sizeColumn !== nameColumn else { return }
+
+        // room for "744,9 MB" in width-stable digits
+        sizeColumn.width = max(sizeColumn.width, 74)
+
+        let spacing = table.intercellSpacing.width * CGFloat(table.tableColumns.count)
+        let columnsWidth = table.tableColumns.reduce(0) { $0 + $1.width } + spacing
+        let missing = scrollView.contentSize.width - columnsWidth - 2
+        if missing > 0 {
+            nameColumn.width += missing
+        }
+    }
+
+    private func styleBorders() {
+        let panels: [NSView?] = [_filesOutlineView.enclosingScrollView, _treeMapView]
+        for panel in panels {
+            panel?.wantsLayer = true
+            panel?.layer?.cornerRadius = 10
+            panel?.layer?.cornerCurve = .continuous
+            panel?.layer?.masksToBounds = true
+            panel?.layer?.borderWidth = Theme.increaseContrast ? 2 : 1
+            panel?.layer?.borderColor = (Theme.increaseContrast ? NSColor.white : Theme.hairline).cgColor
+        }
+    }
+
+    @objc private func accessibilityOptionsChanged(_ notification: Notification) {
+        styleBorders()
+        _treeMapView.needsDisplay = true
+    }
+
+    deinit {
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
     }
 
     @objc func kindStatisticsDrawer() -> NSDrawer { _kindsDrawer }

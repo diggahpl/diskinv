@@ -4,7 +4,9 @@
 //
 //  Swift port of DIXToolbarWindowController.{h,m}. A stock-NSToolbarDelegate
 //  window controller that builds its toolbar from a ".toolbar" plist named
-//  after the concrete subclass. Base class of OAToolbarWindowControllerEx.
+//  after the concrete subclass (SF Symbol icons, see Theme.symbolImage) and
+//  installs it on the window once the nib has loaded. Base class of
+//  OAToolbarWindowControllerEx.
 //
 //  GPL v3
 //
@@ -31,17 +33,44 @@ class DIXToolbarWindowController: NSWindowController, NSToolbarDelegate {
 
     @objc(toolbarInfoForItem:)
     func toolbarInfoForItem(_ identifier: String) -> [String: Any]? {
-        (toolbarConfiguration["items"] as? [String: Any])?[identifier] as? [String: Any]
+        (toolbarConfiguration["itemInfoByIdentifier"] as? [String: Any])?[identifier] as? [String: Any]
+    }
+
+    /// The SF Symbol image a plist item names; `offState` picks the alternate
+    /// symbol of a toggle (falling back to the regular one).
+    func toolbarImage(forInfo info: [String: Any]?, offState: Bool = false, label: String? = nil) -> NSImage? {
+        let name = (offState ? info?["symbolNameOffState"] as? String : nil) ?? info?["symbolName"] as? String
+        return name.flatMap { Theme.symbolImage(named: $0, description: label) }
+    }
+
+    // MARK: - Toolbar installation
+
+    override func windowDidLoad() {
+        super.windowDidLoad()
+        installToolbar()
+    }
+
+    private func installToolbar() {
+        guard let window = window, window.toolbar == nil, !toolbarConfiguration.isEmpty else { return }
+
+        let toolbar = NSToolbar(identifier: NSToolbar.Identifier(toolbarConfigurationName))
+        toolbar.delegate = self
+        toolbar.allowsUserCustomization = true
+        toolbar.autosavesConfiguration = true
+        window.toolbarStyle = .unified
+        window.toolbar = toolbar
+        // icon-only, like a glass toolbar; the labels live on as tooltips
+        toolbar.displayMode = .iconOnly
     }
 
     // MARK: - NSToolbarDelegate
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        (toolbarConfiguration["defaultItems"] as? [String])?.map { NSToolbarItem.Identifier($0) } ?? []
+        (toolbarConfiguration["defaultItemIdentifiers"] as? [String])?.map { NSToolbarItem.Identifier($0) } ?? []
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        (toolbarConfiguration["allowedItems"] as? [String])?.map { NSToolbarItem.Identifier($0) } ?? []
+        (toolbarConfiguration["allowedItemIdentifiers"] as? [String])?.map { NSToolbarItem.Identifier($0) } ?? []
     }
 
     func toolbar(_ toolbar: NSToolbar,
@@ -60,9 +89,7 @@ class DIXToolbarWindowController: NSWindowController, NSToolbarDelegate {
             item.toolTip = NSLocalizedString(toolTip, comment: "")
         }
 
-        if let imageName = info["imageName"] as? String {
-            item.image = NSImage(named: imageName)
-        }
+        item.image = toolbarImage(forInfo: info, label: item.label)
 
         if var actionString = info["action"] as? String {
             if !actionString.hasSuffix(":") {

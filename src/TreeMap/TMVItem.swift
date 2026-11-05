@@ -55,7 +55,6 @@ final class TMVItem: NSObject {
 
     // Lazily-initialized shared drawing colors/attributes (was +initialize statics).
     private static let leafGridColor: NSColor = .disabledControlTextColor
-    private static let highlightGridColor: NSColor = .yellow
 
     @objc(initWithDataSource:delegate:renderedItem:treeMapView:)
     convenience init(dataSource: Any?, delegate: Any?, renderedItem item: Any?, treeMapView view: Any?) {
@@ -162,14 +161,7 @@ final class TMVItem: NSObject {
             return
         }
 
-        TMVItem.highlightGridColor.set()
-
-        let oldLineWidth = NSBezierPath.defaultLineWidth
-        NSBezierPath.defaultLineWidth = 2
-
-        NSBezierPath.stroke(rectPoints)
-
-        NSBezierPath.defaultLineWidth = oldLineWidth
+        TreeMapGlow.drawSelection(in: rectPoints)
     }
 
     // Walks the tree on the calling thread (the delegate is asked for each leaf's

@@ -14,6 +14,16 @@ import Cocoa
 @objc(DIXTableView)
 class DIXTableView: NSTableView {
 
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        backgroundColor = Theme.spaceRaised
+    }
+
+    // the table is cell-based, so the selection plate is drawn here
+    override func highlightSelection(inClipRect clipRect: NSRect) {
+        GlowSelection.highlightSelectedRows(of: self, in: clipRect)
+    }
+
     override func menu(for event: NSEvent) -> NSMenu? {
         let point = convert(event.locationInWindow, from: nil)
         let columnIndex = column(at: point)

@@ -217,6 +217,10 @@ class FilesOutlineViewController: NSObject, NSOutlineViewDataSource, NSOutlineVi
             : NSFont.systemFontSize
         _outlineView?.font = NSFont.systemFont(ofSize: fontSize)
         _outlineView?.rowHeight = fontSize + 4
+
+        // sizes in width-stable numerals, so the digits line up row by row
+        let sizeColumn = _outlineView?.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier("size"))
+        (sizeColumn?.dataCell as? NSCell)?.font = Theme.numericFont(ofSize: fontSize)
     }
 
     private func reloadData() {

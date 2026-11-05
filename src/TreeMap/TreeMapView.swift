@@ -126,7 +126,7 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
 
     override func awakeFromNib() {
         let trackingArea = NSTrackingArea(rect: bounds,
-                                          options: [.mouseMoved, .inVisibleRect, .activeInActiveApp],
+                                          options: [.mouseMoved, .mouseEnteredAndExited, .inVisibleRect, .activeInActiveApp],
                                           owner: self, userInfo: nil)
         addTrackingArea(trackingArea)
         // we defer the creation of the renderers till "reloadData" is called explicitly
@@ -239,6 +239,10 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
                            respectFlipped: true, hints: nil)
             }
 
+            if let touchedRenderer = _touchedRenderer, touchedRenderer !== _selectedRenderer {
+                TreeMapGlow.drawHover(in: itemRect(byCellId: touchedRenderer))
+            }
+
             if let selectedRenderer = _selectedRenderer {
                 selectedRenderer.drawHighlightFrame()
             }
@@ -309,7 +313,9 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
             return
         }
 
+        invalidateHoverFrame(of: _touchedRenderer)
         _touchedRenderer = renderer
+        invalidateHoverFrame(of: _touchedRenderer)
 
         let touchedItem: Any? = _touchedRenderer?.item()
 
@@ -325,6 +331,17 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
         let userInfo: [AnyHashable: Any] = (touchedItem == nil) ? [:] : [TMVTouchedItem: touchedItem!]
         NotificationCenter.default.post(name: NSNotification.Name(TreeMapViewItemTouchedNotification),
                                         object: self, userInfo: userInfo)
+    }
+
+    override func mouseExited(with theEvent: NSEvent) {
+        guard _touchedRenderer != nil else { return }
+
+        invalidateHoverFrame(of: _touchedRenderer)
+        _touchedRenderer = nil
+        toolTip = nil
+
+        NotificationCenter.default.post(name: NSNotification.Name(TreeMapViewItemTouchedNotification),
+                                        object: self, userInfo: [:])
     }
 
     override func menu(for event: NSEvent) -> NSMenu? {
@@ -451,6 +468,7 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
             oldImageRep = NSBitmapImageRep.imageRepCompatible(with: self)
             _rootItemRenderer?.calcLayout(viewBounds)
             if let oldImageRep = oldImageRep {
+                TreeMapGlow.fillBackground(oldImageRep)
                 _rootItemRenderer?.drawCushion(inBitmap: oldImageRep)
             }
         } else {
@@ -627,6 +645,12 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
 
     // MARK: - Private
 
+    // repaints just the area of a cell that was (or is) hovered
+    private func invalidateHoverFrame(of renderer: TMVItem?) {
+        guard let renderer = renderer else { return }
+        setNeedsDisplay(itemRect(byCellId: renderer).insetBy(dx: -1, dy: -1))
+    }
+
     private func drawInCache() {
         if _cachedContent != nil {
             return
@@ -639,6 +663,9 @@ final class TreeMapView: NSView, NSViewToolTipOwner {
 
     private func allocContentCache() {
         _cachedContent = NSBitmapImageRep.imageRepCompatible(with: self)
+        if let cache = _cachedContent {
+            TreeMapGlow.fillBackground(cache)
+        }
     }
 
     private func deallocContentCache() {

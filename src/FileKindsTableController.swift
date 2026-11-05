@@ -73,6 +73,9 @@ class FileKindsTableController: NSObject {
 
     // MARK: - NSTableView delegate
 
+    // The table is nib-wired to this plain NSObject, which declares no delegate
+    // conformance, so the selector has to be exposed for the swatches to appear.
+    @objc(tableView:willDisplayCell:forTableColumn:row:)
     func tableView(_ tableView: NSTableView, willDisplayCell cell: Any,
                    for tableColumn: NSTableColumn?, row: Int) {
         if tableColumn?.identifier.rawValue == "color", let image = colorImage(forRow: row, column: tableColumn) {

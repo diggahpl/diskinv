@@ -35,16 +35,14 @@ class OAToolbarWindowControllerEx: DIXToolbarWindowController, NSMenuItemValidat
 
     private static let stateImages = NSMutableDictionary()  // configName -> (itemId -> (imageKey -> NSImage))
 
-    // image for a toolbar item in a given on/off/mixed state — a toolbar button's
-    // equivalent of a menu item's checkmark. Image names come from the .toolbar
-    // plist (imageName / imageNameOffState / imageNameMixedState); cached per
-    // toolbar config + item.
+    // image for a toolbar item in a given on/off state — a toolbar button's
+    // equivalent of a menu item's checkmark. The symbols come from the .toolbar
+    // plist (symbolName / symbolNameOffState); cached per toolbar config + item.
     private func stateImage(for item: NSToolbarItem, state: NSControl.StateValue) -> NSImage? {
         let imageKey: String
         switch state {
-        case .on: imageKey = "imageName"
-        case .off: imageKey = "imageNameOffState"
-        case .mixed: imageKey = "imageNameMixedState"
+        case .on: imageKey = "symbolName"
+        case .off: imageKey = "symbolNameOffState"
         default: return nil
         }
 
@@ -71,8 +69,7 @@ class OAToolbarWindowControllerEx: DIXToolbarWindowController, NSMenuItemValidat
 
         // call super to skip the menu-synchronisation done in our override below
         let itemInfo = super.toolbarInfoForItem(itemId)
-        let imageName = (itemInfo?[imageKey] as? String) ?? (itemInfo?["imageName"] as? String)
-        guard let imageName = imageName, let image = NSImage(named: imageName) else { return nil }
+        guard let image = toolbarImage(forInfo: itemInfo, offState: state == .off, label: item.label) else { return nil }
 
         itemImageCache[imageKey] = image
         return image
@@ -164,13 +161,12 @@ class OAToolbarWindowControllerEx: DIXToolbarWindowController, NSMenuItemValidat
         guard window?.isKeyWindow == true else { return false }
         let v = commandValidation(forAction: item.action)
 
-        // NSToolbarItem.title is 10.15+ (deployment target is 10.13); the original
-        // proxy set it dynamically only if the item responded, so do the same.
+        // a toggling command reads "Show…" or "Hide…" as its state changes; an
+        // icon-only toolbar carries that in the label and tooltip
         if let title = v.title {
             let localized = NSLocalizedString(title, comment: "")
-            if item.responds(to: NSSelectorFromString("setTitle:")) {
-                item.setValue(localized, forKey: "title")
-            }
+            item.label = localized
+            item.toolTip = localized
         }
 
         // a toolbar button shows on/off as a different icon (what the proxy did by
