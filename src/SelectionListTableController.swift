@@ -46,6 +46,9 @@ class SelectionListTableController: NSObject {
         doc?.addObserver(self, forKeyPath: DocKeySelectedItem, options: [], context: nil)
         _selectionListArrayController.addObserver(self, forKeyPath: "selection", options: [], context: nil)
 
+        TableColumns.usePlainCell(in: _tableView, columnIdentifier: "size")
+        TableColumns.usePlainCell(in: _tableView, columnIdentifier: "displayPath")
+
         // ImageAndTextCell as the data cell for the "Name" column
         _tableView.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier("displayName"))?.dataCell = ImageAndTextCell.cell()
 
@@ -65,6 +68,9 @@ class SelectionListTableController: NSObject {
     @objc(tableView:willDisplayCell:forTableColumn:row:)
     func tableView(_ tableView: NSTableView, willDisplayCell cell: Any,
                    for tableColumn: NSTableColumn?, row: Int) {
+        // the nib's cells paint their own background over the selection plate
+        (cell as? NSTextFieldCell)?.drawsBackground = false
+
         if tableColumn?.identifier.rawValue == "displayName",
            let item = (_selectionListArrayController.arrangedObjects as? [Any])?[row] as? FSItem,
            let cell = cell as? ImageAndTextCell {
@@ -121,6 +127,11 @@ class SelectionListTableController: NSObject {
             : NSFont.systemFontSize
         _tableView.font = NSFont.systemFont(ofSize: fontSize)
         _tableView.rowHeight = (fontSize * 1.7).rounded()
+
+        // the nib's cells paint their own background over the selection plate
+        for column in _tableView.tableColumns {
+            (column.dataCell as? NSTextFieldCell)?.drawsBackground = false
+        }
 
         // sizes in width-stable digits; the path loses its head when it is too long, as the
         // end of a path says more than its start, and is a step quieter than the name

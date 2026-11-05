@@ -49,6 +49,9 @@ class FileKindsTableController: NSObject {
         _kindsTableArrayController.addObserver(self, forKeyPath: "arrangedObjects", options: [], context: nil)
         center.addObserver(self, selector: #selector(kindFocusChanged(_:)), name: KindFocus.changedNotification, object: doc)
 
+        TableColumns.usePlainCell(in: _tableView, columnIdentifier: "size")
+        TableColumns.usePlainCell(in: _tableView, columnIdentifier: "fileCount")
+
         // the kind's name with a bar for its share, in place of the nib's plain text cell
         if let kindColumn = _tableView.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier("kindName")) {
             let cell = ShareBarCell(textCell: "")
@@ -87,6 +90,9 @@ class FileKindsTableController: NSObject {
     @objc(tableView:willDisplayCell:forTableColumn:row:)
     func tableView(_ tableView: NSTableView, willDisplayCell cell: Any,
                    for tableColumn: NSTableColumn?, row: Int) {
+        // the nib's cells paint their own background over the selection plate
+        (cell as? NSTextFieldCell)?.drawsBackground = false
+
         if tableColumn?.identifier.rawValue == "color", let image = colorImage(forRow: row, column: tableColumn) {
             // the "color" column's data cell is an image cell; set via KVC since
             // NSCell's -setImage: isn't exposed uniformly to Swift
@@ -205,6 +211,11 @@ class FileKindsTableController: NSObject {
             : NSFont.systemFontSize
         _tableView.font = NSFont.systemFont(ofSize: fontSize)
         _tableView.rowHeight = (fontSize * 1.7).rounded()
+
+        // the nib's cells paint their own background over the selection plate
+        for column in _tableView.tableColumns {
+            (column.dataCell as? NSTextFieldCell)?.drawsBackground = false
+        }
 
         for id in ["size", "fileCount"] {
             let cell = _tableView.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier(id))?.dataCell as? NSTextFieldCell

@@ -18,11 +18,40 @@ class DIXTableView: NSTableView {
         super.awakeFromNib()
         backgroundColor = Theme.spaceRaised
         FlatHeaderView.install(in: self)
+
+        // The system's highlight paints the selected row's cells grey over any plate; the
+        // table draws its own plate in drawRow and the cells stay as they are.
+        selectionHighlightStyle = .none
     }
 
-    // the table is cell-based, so the selection plate is drawn here
-    override func highlightSelection(inClipRect clipRect: NSRect) {
-        GlowSelection.highlightSelectedRows(of: self, in: clipRect)
+    // the selection plate, drawn under the cells of the row
+    override func drawRow(_ row: Int, clipRect: NSRect) {
+        if isRowSelected(row) {
+            let active = window?.isKeyWindow == true && window?.firstResponder === self
+            GlowSelection.drawPlate(in: rect(ofRow: row).insetBy(dx: 4, dy: 1), strength: active ? 1 : 0.55)
+        }
+        super.drawRow(row, clipRect: clipRect)
+    }
+
+    // without a system highlight nothing else repaints the plate when the selection or the focus moves
+    override func selectRowIndexes(_ indexes: IndexSet, byExtendingSelection extend: Bool) {
+        super.selectRowIndexes(indexes, byExtendingSelection: extend)
+        needsDisplay = true
+    }
+
+    override func deselectAll(_ sender: Any?) {
+        super.deselectAll(sender)
+        needsDisplay = true
+    }
+
+    override func becomeFirstResponder() -> Bool {
+        needsDisplay = true
+        return super.becomeFirstResponder()
+    }
+
+    override func resignFirstResponder() -> Bool {
+        needsDisplay = true
+        return super.resignFirstResponder()
     }
 
     override func menu(for event: NSEvent) -> NSMenu? {

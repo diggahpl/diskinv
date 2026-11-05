@@ -267,6 +267,23 @@ final class ShareBarCell: NSTextFieldCell {
 
 enum TableColumns {
 
+    /// Replaces the nib's data cell of `column` with a plain text cell of the same alignment
+    /// and formatter: the nib's cells paint a grey background over the selection plate.
+    static func usePlainCell(in table: NSTableView, columnIdentifier: String) {
+        guard let column = table.tableColumn(withIdentifier: NSUserInterfaceItemIdentifier(columnIdentifier)),
+              let old = column.dataCell as? NSTextFieldCell, !(old is ShareBarCell) else { return }
+
+        let cell = NSTextFieldCell(textCell: "")
+        cell.formatter = old.formatter
+        cell.alignment = old.alignment
+        cell.lineBreakMode = .byClipping
+        cell.isBordered = false
+        cell.drawsBackground = false
+        cell.isEditable = false
+        cell.isSelectable = false
+        column.dataCell = cell
+    }
+
     /// Gives a table's columns the room it has: the color swatch and the numbers keep a
     /// width that fits them, the text columns share the rest. The nib's widths were made
     /// for another panel, and clipped "Mach-O dynamic libra" and "648,9 ME" in it.
