@@ -43,6 +43,7 @@ A from-scratch SwiftUI rewrite lives in a sibling repository as **Disk Inventory
 
 - **Tjark Derlien** — original author of Disk Inventory X (2003–2022)
 - **Mahmoud Lababidi** — Apple Silicon port, Xcode 26 warning cleanup, Hardened Runtime fix, notarized release pipeline (2026)
+- **Przemek Dymarkowski** — developer of this version (2026): faster scanner and treemap, the "Holo Glass" interface, a rewritten Help. Source: <https://github.com/diggahpl/diskinv>
 
 ## License
 
