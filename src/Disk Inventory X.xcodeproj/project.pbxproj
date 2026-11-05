@@ -96,6 +96,7 @@
 		FCCFB382097FA4C1009EA2B6 /* VolumesPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = FCCFB36E097FA4C1009EA2B6 /* VolumesPanel.nib */; };
 		FCFB17B621B876A400E3F8C4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FCFB17B521B876A400E3F8C4 /* Images.xcassets */; };
 		FE6EAB992076F520D661A2F9 /* TreeMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CD1EED6AF7EDF24C846A81 /* TreeMapViewController.swift */; };
+		5D7A1C3E9B2F40A6817D3E51 /* TreeMapPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7A1C3E9B2F40A6817D3E52 /* TreeMapPerformanceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -251,6 +252,7 @@
 		FCE7DA50E548B4B914FF582F /* NSDictionary+DIX.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NSDictionary+DIX.swift"; sourceTree = "<group>"; };
 		FCFB17B521B876A400E3F8C4 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = "Disk Inventory X/Images.xcassets"; sourceTree = "<group>"; };
 		FD5319CC922429DBDD832688 /* Timing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Timing.swift; sourceTree = "<group>"; };
+		5D7A1C3E9B2F40A6817D3E52 /* TreeMapPerformanceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TreeMapPerformanceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -420,6 +422,7 @@
 				10DDD98E114047F8AA68692C /* TestFixtures.swift */,
 				CBFE2559DC8E30F4BE2D3B44 /* FSItemScanTests.swift */,
 				A1B2C3D4E5F60718293A4B5D /* FSItemSizePropagationTests.swift */,
+				5D7A1C3E9B2F40A6817D3E52 /* TreeMapPerformanceTests.swift */,
 			);
 			name = Tests;
 			path = Tests;
@@ -811,6 +814,7 @@
 				DF7F1C4BDD1BF388305A7583 /* TestFixtures.swift in Sources */,
 				70F3A1D4CEFCD380BBE4BAB2 /* FSItemScanTests.swift in Sources */,
 				A1B2C3D4E5F60718293A4B5C /* FSItemSizePropagationTests.swift in Sources */,
+				5D7A1C3E9B2F40A6817D3E51 /* TreeMapPerformanceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
