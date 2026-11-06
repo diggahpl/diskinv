@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AD0B8ADE0F5F79D80D385310 /* SandboxAndPrivacyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6786089826BDF63C6E9ED82 /* SandboxAndPrivacyTests.swift */; };
+		01DAFFEDC37C03B37484F014 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 28DDF1AF7DBB75E111EE13BE /* PrivacyInfo.xcprivacy */; };
+		1261ADD88B9397A8DFB6DE62 /* AppSandbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B587322707E328E239197A7 /* AppSandbox.swift */; };
 		0383E2AA06B2692610D4B9C3 /* NTFilePasteboardSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 858D2D141C67702695FB5E29 /* NTFilePasteboardSource.swift */; };
 		050CA122EBD66D4156084AC7 /* TreeMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B23920DF00C35746695256 /* TreeMapView.swift */; };
 		0A5107CEF5C4C811F45DFE6F /* NSBitmapImageRep-CreationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9303FEF3F04D57E6A0398D9 /* NSBitmapImageRep-CreationExtensions.swift */; };
@@ -124,6 +127,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C6786089826BDF63C6E9ED82 /* SandboxAndPrivacyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SandboxAndPrivacyTests.swift"; sourceTree = "<group>"; };
+		28DDF1AF7DBB75E111EE13BE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "PrivacyInfo.xcprivacy"; sourceTree = "<group>"; };
+		7B587322707E328E239197A7 /* AppSandbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppSandbox.swift"; sourceTree = "<group>"; };
 		060080DADA4A2E1545B0F157 /* LoadingPanelController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoadingPanelController.swift; sourceTree = "<group>"; };
 		079776155C62C55A2ECBDE41 /* FileSizeTransformer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FileSizeTransformer.swift; sourceTree = "<group>"; };
 		08826F8E677C447E8E141C12 /* FSItemIndex.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FSItemIndex.swift; sourceTree = "<group>"; };
@@ -321,6 +327,7 @@
 		2A37F4AAFDCFA73011CA2CEA = {
 			isa = PBXGroup;
 			children = (
+				7B587322707E328E239197A7 /* AppSandbox.swift */,
 				FCB5709822CD2DE60014B794 /* BuildRelease.sh */,
 				FC2DB78221AF4E1100F24C1E /* Disk Inventory X.entitlements */,
 				FCD71DB4098413FF00590D16 /* Documentation */,
@@ -387,6 +394,7 @@
 		2A37F4B8FDCFA73011CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				28DDF1AF7DBB75E111EE13BE /* PrivacyInfo.xcprivacy */,
 				FCFB17B521B876A400E3F8C4 /* Images.xcassets */,
 				FCCFB336097FA44A009EA2B6 /* Preferences */,
 				FCCFB329097FA44A009EA2B6 /* Toolbar */,
@@ -426,6 +434,7 @@
 		6C090CF1B083CB2F0E798B34 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				C6786089826BDF63C6E9ED82 /* SandboxAndPrivacyTests.swift */,
 				10DDD98E114047F8AA68692C /* TestFixtures.swift */,
 				CBFE2559DC8E30F4BE2D3B44 /* FSItemScanTests.swift */,
 				C1A04F29AA041F3CCA557FA7 /* ThemeTests.swift */,
@@ -695,6 +704,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				01DAFFEDC37C03B37484F014 /* PrivacyInfo.xcprivacy in Resources */,
 				FCCFB33C097FA44A009EA2B6 /* MainWindowToolbar.toolbar in Resources */,
 				FCFB17B621B876A400E3F8C4 /* Images.xcassets in Resources */,
 				FCCFB341097FA44A009EA2B6 /* Preferences.tiff in Resources */,
@@ -740,6 +750,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1261ADD88B9397A8DFB6DE62 /* AppSandbox.swift in Sources */,
 				469C74170EF1FB80276B6696 /* FileSizeFormatter.swift in Sources */,
 				1DB953EBF4BCB2797CEFC524 /* FileSizeTransformer.swift in Sources */,
 				1C2EDD51A666C3536670482C /* VolumeNameTransformer.swift in Sources */,
@@ -808,6 +819,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD0B8ADE0F5F79D80D385310 /* SandboxAndPrivacyTests.swift in Sources */,
 				DF7F1C4BDD1BF388305A7583 /* TestFixtures.swift in Sources */,
 				70F3A1D4CEFCD380BBE4BAB2 /* FSItemScanTests.swift in Sources */,
 				7FEC4DA66230B5B56D26C3C7 /* ThemeTests.swift in Sources */,

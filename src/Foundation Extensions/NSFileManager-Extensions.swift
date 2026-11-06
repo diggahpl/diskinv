@@ -15,21 +15,34 @@ import Foundation
 
 extension FileManager {
 
+    // The user's real home folder. In the App Sandbox the search paths below point into the
+    // app's container, but the folders macOS guards are the real ones, which the user hands
+    // over by choosing a folder or a disk in an open panel.
+    private func realUserFolder(_ dir: SearchPathDirectory, named name: String) -> URL? {
+        if AppSandbox.isActive, let pw = getpwuid(getuid()), let home = pw.pointee.pw_dir {
+            return URL(fileURLWithPath: String(cString: home), isDirectory: true)
+                .appendingPathComponent(name, isDirectory: true)
+        }
+        return try? url(for: dir, in: .userDomainMask, appropriateFor: nil, create: false)
+    }
+
     // Folders/files on the local volume under macOS privacy protection. See
     // https://developer.apple.com/documentation/bundleresources/information_property_list/protected_resources
     func localPrivacyProtectedFolders() -> [URL] {
         var protectedURLs: [URL] = []
 
         // folders identified directly by a search-path constant
-        let searchDirs: [SearchPathDirectory] = [.documentDirectory, .desktopDirectory, .downloadsDirectory]
-        for dir in searchDirs {
-            if let dirURL = try? url(for: dir, in: .userDomainMask, appropriateFor: nil, create: false) {
+        let searchDirs: [(SearchPathDirectory, String)] = [(.documentDirectory, "Documents"),
+                                                           (.desktopDirectory, "Desktop"),
+                                                           (.downloadsDirectory, "Downloads")]
+        for (dir, name) in searchDirs {
+            if let dirURL = realUserFolder(dir, named: name) {
                 protectedURLs.append(dirURL)
             }
         }
 
         // photo libraries: all .photoslibrary folders in ~/Pictures
-        if let picturesURL = try? url(for: .picturesDirectory, in: .userDomainMask, appropriateFor: nil, create: false) {
+        if let picturesURL = realUserFolder(.picturesDirectory, named: "Pictures") {
             let dirEnum = enumerator(at: picturesURL,
                                      includingPropertiesForKeys: [.typeIdentifierKey],
                                      options: .skipsSubdirectoryDescendants,
@@ -46,14 +59,11 @@ extension FileManager {
         }
 
         // calendars and reminders: ~/Library/Calendars and ~/Library/Reminders
-        if let libURL = try? url(for: .libraryDirectory, in: .userDomainMask, appropriateFor: nil, create: false) {
+        if let libURL = realUserFolder(.libraryDirectory, named: "Library") {
             protectedURLs.append(libURL.appendingPathComponent("Calendars"))
             protectedURLs.append(libURL.appendingPathComponent("Reminders"))
-        }
-
-        // address book: ~/Library/Application Support/AddressBook
-        if let appSupportURL = try? url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: false) {
-            protectedURLs.append(appSupportURL.appendingPathComponent("AddressBook"))
+            // address book: ~/Library/Application Support/AddressBook
+            protectedURLs.append(libURL.appendingPathComponent("Application Support").appendingPathComponent("AddressBook"))
         }
 
         return protectedURLs

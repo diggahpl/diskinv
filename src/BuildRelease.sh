@@ -53,11 +53,22 @@ echo "==> Re-signing with identity: $SIGN_IDENTITY"
 # to xcodebuild, so the linker leaves the binary unsigned and `codesign <bundle>`
 # won't propagate a signature to an unsigned inner Mach-O.
 EXE_NAME="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP_BUILT/Contents/Info.plist")"
-codesign --force --options runtime \
+
+# Apple's notary service rejects a signature without a secure timestamp, so a real
+# identity (Developer ID) asks the timestamp server for one; ad-hoc signing stays offline.
+if [ "$SIGN_IDENTITY" = "-" ]; then
+    TIMESTAMP_FLAG=""
+else
+    TIMESTAMP_FLAG="--timestamp"
+fi
+
+# shellcheck disable=SC2086
+codesign --force --options runtime $TIMESTAMP_FLAG \
     --sign "$SIGN_IDENTITY" \
     "$APP_BUILT/Contents/MacOS/$EXE_NAME"
 
-codesign --force --options runtime \
+# shellcheck disable=SC2086
+codesign --force --options runtime $TIMESTAMP_FLAG \
     --sign "$SIGN_IDENTITY" \
     --entitlements "$ENTITLEMENTS" \
     "$APP_BUILT"

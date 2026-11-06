@@ -98,3 +98,7 @@
 "Mount Point:" = "Mount Point:";
 "Device:" = "Device:";
 " items" = " items";
+
+/* open panel that gives the app access to a disk (App Sandbox) */
+"Scan" = "Scan";
+"To scan \"%@\", click Scan.\nmacOS lets Disk Inventory Xs look only into what you hand over.\nThe app reads names and sizes, never the contents of your files." = "To scan \"%@\", click Scan.\nmacOS lets Disk Inventory Xs look only into what you hand over.\nThe app reads names and sizes, never the contents of your files.";

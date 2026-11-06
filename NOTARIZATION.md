@@ -49,12 +49,9 @@ spctl -a -vvv -t execute "$APP"
 
 ## Notes
 
-- The build script always uses `--options runtime` (Hardened Runtime). The
-  `com.apple.security.cs.disable-library-validation` entitlement is also set,
-  which is required for the default ad-hoc build path (framework and app
-  share no Team ID), and is harmless to keep when signing with Developer ID.
-  If a future release decides to drop the entitlement, remove the line from
-  `src/Disk Inventory X.entitlements`.
+- The build script always uses `--options runtime` (Hardened Runtime). The entitlements file
+  `src/Disk Inventory X.entitlements` is empty: the `disable-library-validation` entitlement it once carried
+  was for an embedded framework that no longer exists (the treemap is compiled into the app).
 - If notarization fails with "The signature of the binary is invalid", check
   that the framework's inner Mach-O carries `flags=...,runtime`. The build
   script does this; manual re-signs sometimes forget the runtime option.

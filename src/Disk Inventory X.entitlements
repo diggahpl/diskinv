@@ -3,13 +3,11 @@
 <plist version="1.0">
 <dict>
 	<!--
-	  Allow loading the embedded TreeMapView.framework regardless of whether
-	  it was signed with the same Team ID as the app. Required because the
-	  ad-hoc GitHub release build signs framework and app with "-" (no team),
-	  and Hardened Runtime otherwise rejects any non-Apple library that does
-	  not share the host app's Team ID. See issue #2.
+	  Entitlements of the Developer ID build made by BuildRelease.sh. None are needed. The file once held
+	  com.apple.security.cs.disable-library-validation for an embedded
+	  TreeMapView.framework; the treemap is compiled into the app now and nothing
+	  but system frameworks is loaded, so a hardened-runtime build runs without it
+	  (checked with an ad-hoc signed build).
 	-->
-	<key>com.apple.security.cs.disable-library-validation</key>
-	<true/>
 </dict>
 </plist>

@@ -99,6 +99,13 @@ class DrivesPanelController: NSObject {
             guard let volume = _volumes[index]["volume"] as? NSURL, volume.stillExists() else { continue }
             guard let path = volume.path else { continue }
 
+            if AppSandbox.isActive {
+                // the sandbox lets the app look only into what the user hands over
+                // through an open panel, so a volume has to go through one
+                openThroughPanel(volume as URL, name: volume.cachedDisplayName().isEmpty ? path : volume.cachedDisplayName())
+                continue
+            }
+
             // defer to the next loop cycle (otherwise the "Open Volume" button
             // stays visually pressed during the loading)
             RunLoop.current.perform(NSSelectorFromString("openDocumentWithContentsOfFile:"),
@@ -107,6 +114,20 @@ class DrivesPanelController: NSObject {
                                     order: 1,
                                     modes: [.default])
         }
+    }
+
+    // Sandbox: ask the user to confirm the volume in an open panel, then scan it.
+    private func openThroughPanel(_ volumeURL: URL, name: String) {
+        let panel = AppSandbox.makeAccessPanel(for: volumeURL, name: name)
+        let handle: (NSApplication.ModalResponse) -> Void = { response in
+            guard response == .OK, let url = panel.url else { return }
+            // defer to the next loop cycle to let the panel close itself first
+            DispatchQueue.main.async {
+                NSDocumentController.shared.openDocument(withContentsOf: url, display: true) { _, _, _ in }
+            }
+        }
+        // not a sheet: the volumes panel is narrower than an open panel
+        panel.begin(completionHandler: handle)
     }
 
     @objc func panelIsVisible() -> Bool { panel().isVisible }

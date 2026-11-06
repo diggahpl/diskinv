@@ -100,3 +100,7 @@
 "Mount Point:" = "Point de montage:";
 "Device:" = "Volume BSD:";
 " items" = " éléments";
+
+/* open panel that gives the app access to a disk (App Sandbox) */
+"Scan" = "Analyser";
+"To scan \"%@\", click Scan.\nmacOS lets Disk Inventory Xs look only into what you hand over.\nThe app reads names and sizes, never the contents of your files." = "Pour analyser « %@ », cliquez sur Analyser.\nmacOS ne laisse Disk Inventory Xs regarder que ce que vous lui confiez.\nL'app lit les noms et les tailles, jamais le contenu de vos fichiers.";

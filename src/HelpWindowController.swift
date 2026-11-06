@@ -24,7 +24,7 @@ final class DIXApplication: NSApplication {
     }
 }
 
-final class HelpWindowController: NSWindowController {
+final class HelpWindowController: NSWindowController, WKNavigationDelegate {
 
     static let shared = HelpWindowController(window: nil)
 
@@ -67,6 +67,7 @@ final class HelpWindowController: NSWindowController {
         let webView = WKWebView(frame: window.contentLayoutRect)
         webView.autoresizingMask = [.width, .height]
         webView.underPageBackgroundColor = Theme.space
+        webView.navigationDelegate = self
         window.contentView = webView
 
         // the page of the user's language: Bundle picks the localized Help folder
@@ -82,5 +83,21 @@ final class HelpWindowController: NSWindowController {
         }
         NSApp.activate()
         window?.makeKeyAndOrderFront(sender)
+    }
+
+    // The Help is a local page. A sandboxed build is allowed to open network connections only
+    // so that macOS runs this web view in the sandbox, so anything that is not the local page
+    // goes to the user's browser instead.
+    func webView(_ webView: WKWebView,
+                 decidePolicyFor navigationAction: WKNavigationAction,
+                 decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        guard let url = navigationAction.request.url, url.scheme != "file", url.scheme != "about" else {
+            decisionHandler(.allow)
+            return
+        }
+        if url.scheme == "http" || url.scheme == "https" {
+            NSWorkspace.shared.open(url)
+        }
+        decisionHandler(.cancel)
     }
 }

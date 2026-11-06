@@ -81,10 +81,15 @@
 	<string>DIX </string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Disk Inventory Xs needs to access media library files to inspect their sizes and other file attributes.
+No data will be read.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>Disk Inventory Xs needs to access calendar files to inspect their sizes and other file attributes.
 No data will be read.</string>

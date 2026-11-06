@@ -1,5 +1,8 @@
-# Xcode build output
+# Xcode build output (the /build folder at the top holds the zipped release that the README offers)
 build/
+!/build/
+/build/*
+!/build/DiskInventoryXs-*-arm64.zip
 DerivedData/
 
 # Xcode per-user state

@@ -162,7 +162,7 @@ Status: Intel-only (2018 build)
 ```
 
 Option A - Update Omni (if continuing to use):
-1. Clone https://github.com/omnigroup/OmniGroup
+1. Clone the omnigroup/OmniGroup repository
 2. Build frameworks for arm64 + x86_64
 3. Replace old frameworks in project
 
@@ -2115,6 +2115,6 @@ struct FileKindColors {
 - [NSSplitViewController Documentation](https://developer.apple.com/documentation/appkit/nssplitviewcontroller)
 - [NSPasteboard readObjects Documentation](https://developer.apple.com/documentation/appkit/nspasteboard/1524454-readobjects)
 - [SwiftUI Settings Scene](https://nilcoalescing.com/blog/ScenesTypesInASwiftUIMacApp/)
-- [sindresorhus/Settings Library](https://github.com/sindresorhus/Settings)
-- [marioaguzman/toolbar Example](https://github.com/marioaguzman/toolbar)
+- sindresorhus/Settings Library
+- marioaguzman/toolbar Example
 - [NSDrawer Alternatives Discussion](https://developer.apple.com/forums/thread/121585)
